@@ -1,0 +1,1 @@
+export QUEUE_CONFIG='{"media_update": 20, "image_processing": 10, "data_sync": 5}'
