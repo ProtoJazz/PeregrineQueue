@@ -15,6 +15,7 @@ defmodule PeregrineQueue.Application do
       PeregrineQueueWeb.Telemetry,
       # Start the Ecto repository
       PeregrineQueue.Repo,
+      PeregrineQueue.QueueService,
       # Start the PubSub system
       {Phoenix.PubSub, name: PeregrineQueue.PubSub},
       # Start Finch

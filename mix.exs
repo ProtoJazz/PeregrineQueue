@@ -50,7 +50,9 @@ defmodule PeregrineQueue.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:oban, "~> 2.17"}
+      {:oban, "~> 2.17"},
+      {:grpc, "~> 0.5.0"},
+      {:protobuf, "~> 0.10.0"}
     ]
   end
 
