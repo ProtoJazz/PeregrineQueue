@@ -51,8 +51,9 @@ defmodule PeregrineQueue.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:oban, "~> 2.17"},
-      {:grpc, "~> 0.5.0"},
-      {:protobuf, "~> 0.10.0"}
+      {:grpc, "~> 0.9.0"},
+      {:grpc_reflection, "~> 0.1.4"},
+      {:protobuf, "~> 0.11.0"}
     ]
   end
 

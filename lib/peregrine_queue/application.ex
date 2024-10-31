@@ -15,13 +15,15 @@ defmodule PeregrineQueue.Application do
       PeregrineQueueWeb.Telemetry,
       # Start the Ecto repository
       PeregrineQueue.Repo,
-      PeregrineQueue.QueueService,
+      {GRPC.Server.Supervisor,
+       endpoint: PeregrineQueueWeb.GRPCEndpoint, port: 50051, start_server: true},
       # Start the PubSub system
       {Phoenix.PubSub, name: PeregrineQueue.PubSub},
       # Start Finch
       {Finch, name: PeregrineQueue.Finch},
       # Start the Endpoint (http/https)
-      PeregrineQueueWeb.Endpoint
+      PeregrineQueueWeb.Endpoint,
+      GrpcReflection
       # Start a worker by calling: PeregrineQueue.Worker.start_link(arg)
       # {PeregrineQueue.Worker, arg}
     ]

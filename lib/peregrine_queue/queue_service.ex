@@ -1,5 +1,5 @@
 defmodule PeregrineQueue.QueueService do
-  use GRPC.Server, service: Queue.QueueService.Service
+  use GrpcReflection.Server, version: :v1alpha, services: [Queue.QueueService.Service]
 
   @worker_registry :worker_registry
 
@@ -15,19 +15,26 @@ defmodule PeregrineQueue.QueueService do
 
   def start_link(_) do
     :ets.new(@worker_registry, [:named_table, :public, :bag])
-    GRPC.Server.start(__MODULE__, port: 5051)
   end
 
   # Register a worker for a specific queue
-  def register_worker(%Queue.RegisterWorkerRequest{
-        queue_name: queue,
-        worker_id: id,
-        worker_address: address
-      }) do
-    :ets.insert(@worker_registry, {queue, %{worker_id: id, address: address}})
+  def register_worker(
+        %Queue.RegisterWorkerRequest{
+          queue_name: queue,
+          worker_id: id,
+          worker_address: address
+        },
+        _
+      ) do
     IO.puts("Registered worker #{id} for queue #{queue} at #{address}")
 
+    :ets.insert(@worker_registry, {queue, %{worker_id: id, address: address}})
+
     %Queue.RegisterWorkerResponse{status: "success", message: "Worker registered successfully"}
+  end
+
+  def register_worker(_, _) do
+    %Queue.RegisterWorkerResponse{status: "failure", message: "Invalid request"}
   end
 
   def get_workers_for_queue(queue) do
