@@ -53,7 +53,8 @@ defmodule PeregrineQueue.MixProject do
       {:oban, "~> 2.17"},
       {:grpc, "~> 0.9.0"},
       {:grpc_reflection, "~> 0.1.4"},
-      {:protobuf, "~> 0.11.0"}
+      {:protobuf, "~> 0.12.0"},
+      {:protobuf_generate, "~> 0.1.3"}
     ]
   end
 

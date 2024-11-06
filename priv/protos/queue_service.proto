@@ -5,7 +5,7 @@ package queue;
 message RegisterWorkerRequest {
   string queue_name = 1;
   string worker_id = 2;
-  string worker_address = 3; // The IP or URL for callbacks
+  string worker_address = 3;
 }
 
 message RegisterWorkerResponse {
@@ -13,6 +13,22 @@ message RegisterWorkerResponse {
   string message = 2;
 }
 
+message Worker {
+  string worker_id = 1;
+  string worker_address = 2;
+}
+
+message GetWorkersForQueueRequest {
+  string queue_name = 1;
+}
+
+message GetWorkersForQueueResponse {
+  string queue_name = 1;
+  repeated Worker workers = 2;  
+}
+
 service QueueService {
   rpc RegisterWorker (RegisterWorkerRequest) returns (RegisterWorkerResponse);
+  rpc GetWorkersForQueue (GetWorkersForQueueRequest) returns (GetWorkersForQueueResponse);
 }
+
