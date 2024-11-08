@@ -35,3 +35,4 @@ peregrine_queue-*.tar
 npm-debug.log
 /assets/node_modules/
 
+rust_worker/target
