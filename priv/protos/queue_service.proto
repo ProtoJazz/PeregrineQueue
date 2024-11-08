@@ -27,8 +27,18 @@ message GetWorkersForQueueResponse {
   repeated Worker workers = 2;  
 }
 
+message WorkerHeartbeatRequest {
+  string worker_id = 1;
+}
+
+message WorkerHeartbeatResponse {
+  string status = 1;
+  string message = 2;
+}
+
 service QueueService {
   rpc RegisterWorker (RegisterWorkerRequest) returns (RegisterWorkerResponse);
   rpc GetWorkersForQueue (GetWorkersForQueueRequest) returns (GetWorkersForQueueResponse);
+  rpc WorkerHeartBeat (WorkerHeartbeatRequest) returns (WorkerHeartbeatResponse);
 }
 

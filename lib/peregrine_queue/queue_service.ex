@@ -36,20 +36,16 @@ defmodule PeregrineQueue.QueueService do
     %Queue.GetWorkersForQueueResponse{workers: workers}
   end
 
-  # def register_heartbeat(worker_id) do
-  #   :ets.insert(@worker_registry, {worker_id, %{last_heartbeat: System.monotonic_time()}})
-  # end
+  def get_workers_for_queue(queue_name) do
+    WorkerRegistry.get_workers_for_queue(queue_name)
+  end
 
-  # # Check for timed-out workers and remove them
-  # def remove_stale_workers(timeout \\ 30_000) do
-  #   current_time = System.monotonic_time()
+  def worker_heart_beat(%Queue.WorkerHeartbeatRequest{
+    worker_id: worker_id
+  }, _) do
+    WorkerRegistry.register_heartbeat(worker_id)
 
-  #   :ets.tab2list(@worker_registry)
-  #   |> Enum.each(fn {worker_id, %{last_heartbeat: last_heartbeat}} ->
-  #     if current_time - last_heartbeat > timeout do
-  #       :ets.delete(@worker_registry, worker_id)
-  #       IO.puts("Removed stale worker #{worker_id}")
-  #     end
-  #   end)
-  # end
+    %Queue.WorkerHeartbeatResponse{status: "success", message: "Heartbeat registered"}
+  end
+
 end
