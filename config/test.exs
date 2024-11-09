@@ -20,6 +20,8 @@ config :peregrine_queue, PeregrineQueueWeb.Endpoint,
   secret_key_base: "vw4PByORRC8zYLFdlZmn9kPgMs1/0iW8WHOCNXl0EnXPlT7eWP+t0ai9cLQDq/Zc",
   server: false
 
+config :peregrine_queue, Oban, testing: :inline
+
 # In test we don't send emails.
 config :peregrine_queue, PeregrineQueue.Mailer, adapter: Swoosh.Adapters.Test
 

@@ -14,6 +14,12 @@ defmodule PeregrineQueueWeb.Router do
     plug :accepts, ["json"]
   end
 
+  scope "/api", PeregrineQueueWeb do
+    pipe_through :api
+
+    post "/enqueue", QueueController, :enqueue
+  end
+
   scope "/", PeregrineQueueWeb do
     pipe_through :browser
 

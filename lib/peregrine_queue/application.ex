@@ -24,7 +24,8 @@ defmodule PeregrineQueue.Application do
       {Finch, name: PeregrineQueue.Finch},
       # Start the Endpoint (http/https)
       PeregrineQueueWeb.Endpoint,
-      GrpcReflection
+      GrpcReflection,
+      {Oban, Application.fetch_env!(:peregrine_queue, Oban)}
       # Start a worker by calling: PeregrineQueue.Worker.start_link(arg)
       # {PeregrineQueue.Worker, arg}
     ]
@@ -46,25 +47,35 @@ defmodule PeregrineQueue.Application do
   defp configure_oban do
     queue_config_json = System.get_env("QUEUE_CONFIG") || "{}"
 
-    # Parse JSON using Jason
-    queue_config =
-      case Jason.decode(queue_config_json) do
-        {:ok, config} -> Enum.map(config, fn {queue, limit} -> {String.to_atom(queue), limit} end)
-        {:error, _} -> []
+    {oban_config, push_queues, pull_queues} =
+      case Jason.decode(queue_config_json, keys: :atoms) do
+
+        {:ok, config} -> get_oban_queues_from_env(config)
+        {:error, _} -> {[], []}
       end
 
-    # Update Oban configuration
-    Application.put_env(:peregrine_queue, Oban, repo: PeregrineQueue.Repo, queues: queue_config)
+    Application.put_env(:peregrine_queue, Oban, repo: PeregrineQueue.Repo, queues: oban_config)
+    Application.put_env(:peregrine_queue, PeregrineQueue, push_queues: push_queues, pull_queues: pull_queues)
+  end
+
+  defp get_oban_queues_from_env(%{push_queues: push_queues, pull_queues: pull_queues}) do
+      oban_queues =
+        pull_queues ++ push_queues
+        |> Enum.map(fn %{name: name, concurrency: concurrency} -> {String.to_atom(name), concurrency} end)
+
+      {oban_queues, push_queues, pull_queues}
   end
 
   defp print_oban_queues do
-    # Fetch Oban configuration and extract queue names
     oban_config = Application.get_env(:peregrine_queue, Oban, [])
+    queue_config = Application.get_env(:peregrine_queue, PeregrineQueue, %{push_queues: [], pull_queues: []})
 
     queue_names =
       Keyword.get(oban_config, :queues, [])
       |> Enum.map(fn {name, limit} -> "#{name}:#{limit}" end)
 
     IO.puts("Configured Oban Queues: #{inspect(queue_names)}")
+
+    IO.inspect(queue_config, label: "Queue Config")
   end
 end
