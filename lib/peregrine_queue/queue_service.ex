@@ -48,4 +48,9 @@ defmodule PeregrineQueue.QueueService do
     %Queue.WorkerHeartbeatResponse{status: "success", message: "Heartbeat registered"}
   end
 
+  def dispatch_work(job_id, queue_name, worker_address, data) do
+    IO.puts("Dispatching work for job #{job_id} in queue #{queue_name}")
+    {:ok, "Work dispatched"}
+  end
+
 end

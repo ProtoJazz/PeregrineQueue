@@ -12,27 +12,19 @@ defmodule PeregrineQueue.DynamicQueue do
     queue = Enum.find(all_queues, fn queue -> queue.name == queue_name end)
 
     if queue do
-      %{"queue_name" => queue_name, "data" => data}
+      oban_job = %{"queue_name" => queue_name, "data" => data}
       |> GenericWorker.new(queue: String.to_atom(queue_name))
       |> Oban.insert!()
+
+
+      %PeregrineQueue.JobData{}
+      |> PeregrineQueue.JobData.changeset(%{oban_id: oban_job.id, payload: data, queue_name: queue_name, status: :pending, worker_id: nil, worker_address: nil})
+      |> PeregrineQueue.Repo.insert!()
 
       {:ok, "Job enqueued"}
 
     else
       {:error, "Queue #{queue_name} is not configured"}
     end
-    # queue_config = Jason.decode!(queue_config_json)
-
-    # # Verify if the specified queue exists in configuration
-    # if Map.has_key?(queue_config, queue_name) do
-    #   Oban.insert!(%Oban.Job{
-    #     # Dynamically use queue name
-    #     queue: String.to_atom(queue_name),
-    #     worker: GenericWorker,
-    #     args: %{"queue_name" => queue_name, "data" => data}
-    #   })
-    # else
-    #   {:error, "Queue #{queue_name} is not configured"}
-    # end
   end
 end
