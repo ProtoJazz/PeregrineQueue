@@ -31,7 +31,7 @@ defmodule PeregrineQueue.WorkerRegistry do
     :timer.send_interval(10 * 1000, :begin_purge)
   end
 
-  def remove_stale_workers(timeout \\ 20_000) do
+  def remove_stale_workers(timeout \\ 5 * 60_000) do
     current_time = System.monotonic_time(:millisecond)
     Logger.info("Running worker removal check")
 

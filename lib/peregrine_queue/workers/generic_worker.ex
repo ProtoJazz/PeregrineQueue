@@ -1,10 +1,13 @@
 defmodule PeregrineQueue.Workers.GenericWorker do
+  alias PeregrineQueue.JobDataService
+  alias PeregrineQueue.JobData
   use Oban.Worker
-
+  alias PeregrineQueue.WorkerClient
+  alias PeregrineQueue.Repo
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"queue_name" => queue_name, "data" => data}}) do
+  def perform(%Oban.Job{args: %{"queue_name" => queue_name, "data" => data}} = job) do
     # Lockout the job while we attempt it
-
+    IO.inspect(job, label: "Job")
     workers = PeregrineQueue.QueueService.get_workers_for_queue(queue_name)
 
     case workers do
@@ -14,20 +17,29 @@ defmodule PeregrineQueue.Workers.GenericWorker do
 
       _ ->
         IO.puts("Workers found for queue #{queue_name}")
-
+        job_data = JobDataService.get_job_data_by_oban_id(job.id)
         dispatched_worker = Enum.reduce_while(0..Enum.count(workers), nil, fn x, acc ->
 
           attempt_worker = Enum.at(workers, x)
 
+          IO.puts("Attempting worker: #{inspect(attempt_worker)}")
+          {:ok, channel} = WorkerClient.start_link(attempt_worker.worker_address)
+
+          IO.puts("Channel: #{inspect(channel)}")
+          {status, response} = WorkerClient.dispatch_work(channel, data, queue_name, "job_id")
+          IO.inspect(response, label: " dispatch work Response")
+          IO.inspect(status, label: "Status")
+          #handle long running shit too, but for now assume 1 is done
           #send work through GRPC
 
+          if(status == :ok) do
+            JobDataService.update_job_data(job_data, %{worker_address: attempt_worker.worker_address, worker_id: attempt_worker.worker_id, status: String.to_atom(response) })
+            {:halt, attempt_worker}
+          else
+            {:cont, nil}
+          end
 
-          # if attempt_failed do
-          #   IO.puts("Current value: #{x}")
-          #   {:cont, nil} # Continue loop
-          # else
-          #   {:halt, attempt_worker} # Stop loop
-          # end
+
         end)
 
 
