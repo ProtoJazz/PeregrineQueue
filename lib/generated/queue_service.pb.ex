@@ -375,7 +375,7 @@ defmodule Queue.DispatchWorkRequest do
           extendee: nil,
           number: 1,
           label: :LABEL_OPTIONAL,
-          type: :TYPE_STRING,
+          type: :TYPE_INT32,
           type_name: nil,
           default_value: nil,
           options: nil,
@@ -425,7 +425,7 @@ defmodule Queue.DispatchWorkRequest do
     }
   end
 
-  field :job_id, 1, type: :string, json_name: "jobId"
+  field :job_id, 1, type: :int32, json_name: "jobId"
   field :queue_name, 2, type: :string, json_name: "queueName"
   field :data, 3, type: :string
 end
@@ -497,6 +497,144 @@ defmodule Queue.DispatchWorkResponse do
   field :status, 1, type: :string
   field :worker_id, 2, type: :string, json_name: "workerId"
   field :worker_address, 3, type: :string, json_name: "workerAddress"
+end
+
+defmodule Queue.WorkReportRequest do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  def descriptor do
+    # credo:disable-for-next-line
+    %Google.Protobuf.DescriptorProto{
+      name: "WorkReportRequest",
+      field: [
+        %Google.Protobuf.FieldDescriptorProto{
+          name: "job_id",
+          extendee: nil,
+          number: 1,
+          label: :LABEL_OPTIONAL,
+          type: :TYPE_INT32,
+          type_name: nil,
+          default_value: nil,
+          options: nil,
+          oneof_index: nil,
+          json_name: "jobId",
+          proto3_optional: nil,
+          __unknown_fields__: []
+        },
+        %Google.Protobuf.FieldDescriptorProto{
+          name: "worker_id",
+          extendee: nil,
+          number: 2,
+          label: :LABEL_OPTIONAL,
+          type: :TYPE_STRING,
+          type_name: nil,
+          default_value: nil,
+          options: nil,
+          oneof_index: nil,
+          json_name: "workerId",
+          proto3_optional: nil,
+          __unknown_fields__: []
+        },
+        %Google.Protobuf.FieldDescriptorProto{
+          name: "status",
+          extendee: nil,
+          number: 3,
+          label: :LABEL_OPTIONAL,
+          type: :TYPE_STRING,
+          type_name: nil,
+          default_value: nil,
+          options: nil,
+          oneof_index: nil,
+          json_name: "status",
+          proto3_optional: nil,
+          __unknown_fields__: []
+        },
+        %Google.Protobuf.FieldDescriptorProto{
+          name: "queue_name",
+          extendee: nil,
+          number: 4,
+          label: :LABEL_OPTIONAL,
+          type: :TYPE_STRING,
+          type_name: nil,
+          default_value: nil,
+          options: nil,
+          oneof_index: nil,
+          json_name: "queueName",
+          proto3_optional: nil,
+          __unknown_fields__: []
+        },
+        %Google.Protobuf.FieldDescriptorProto{
+          name: "data",
+          extendee: nil,
+          number: 5,
+          label: :LABEL_OPTIONAL,
+          type: :TYPE_STRING,
+          type_name: nil,
+          default_value: nil,
+          options: nil,
+          oneof_index: nil,
+          json_name: "data",
+          proto3_optional: nil,
+          __unknown_fields__: []
+        }
+      ],
+      nested_type: [],
+      enum_type: [],
+      extension_range: [],
+      extension: [],
+      options: nil,
+      oneof_decl: [],
+      reserved_range: [],
+      reserved_name: [],
+      __unknown_fields__: []
+    }
+  end
+
+  field :job_id, 1, type: :int32, json_name: "jobId"
+  field :worker_id, 2, type: :string, json_name: "workerId"
+  field :status, 3, type: :string
+  field :queue_name, 4, type: :string, json_name: "queueName"
+  field :data, 5, type: :string
+end
+
+defmodule Queue.WorkReportResponse do
+  @moduledoc false
+  use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
+
+  def descriptor do
+    # credo:disable-for-next-line
+    %Google.Protobuf.DescriptorProto{
+      name: "WorkReportResponse",
+      field: [
+        %Google.Protobuf.FieldDescriptorProto{
+          name: "status",
+          extendee: nil,
+          number: 1,
+          label: :LABEL_OPTIONAL,
+          type: :TYPE_STRING,
+          type_name: nil,
+          default_value: nil,
+          options: nil,
+          oneof_index: nil,
+          json_name: "status",
+          proto3_optional: nil,
+          __unknown_fields__: []
+        }
+      ],
+      nested_type: [],
+      enum_type: [],
+      extension_range: [],
+      extension: [],
+      options: nil,
+      oneof_decl: [],
+      reserved_range: [],
+      reserved_name: [],
+      __unknown_fields__: []
+    }
+  end
+
+  field :status, 1, type: :string
 end
 
 defmodule Queue.QueueService.Service do
@@ -799,7 +937,7 @@ defmodule Queue.QueueService.Service do
               extendee: nil,
               number: 1,
               label: :LABEL_OPTIONAL,
-              type: :TYPE_STRING,
+              type: :TYPE_INT32,
               type_name: nil,
               default_value: nil,
               options: nil,
@@ -902,6 +1040,118 @@ defmodule Queue.QueueService.Service do
           reserved_range: [],
           reserved_name: [],
           __unknown_fields__: []
+        },
+        %Google.Protobuf.DescriptorProto{
+          name: "WorkReportRequest",
+          field: [
+            %Google.Protobuf.FieldDescriptorProto{
+              name: "job_id",
+              extendee: nil,
+              number: 1,
+              label: :LABEL_OPTIONAL,
+              type: :TYPE_INT32,
+              type_name: nil,
+              default_value: nil,
+              options: nil,
+              oneof_index: nil,
+              json_name: "jobId",
+              proto3_optional: nil,
+              __unknown_fields__: []
+            },
+            %Google.Protobuf.FieldDescriptorProto{
+              name: "worker_id",
+              extendee: nil,
+              number: 2,
+              label: :LABEL_OPTIONAL,
+              type: :TYPE_STRING,
+              type_name: nil,
+              default_value: nil,
+              options: nil,
+              oneof_index: nil,
+              json_name: "workerId",
+              proto3_optional: nil,
+              __unknown_fields__: []
+            },
+            %Google.Protobuf.FieldDescriptorProto{
+              name: "status",
+              extendee: nil,
+              number: 3,
+              label: :LABEL_OPTIONAL,
+              type: :TYPE_STRING,
+              type_name: nil,
+              default_value: nil,
+              options: nil,
+              oneof_index: nil,
+              json_name: "status",
+              proto3_optional: nil,
+              __unknown_fields__: []
+            },
+            %Google.Protobuf.FieldDescriptorProto{
+              name: "queue_name",
+              extendee: nil,
+              number: 4,
+              label: :LABEL_OPTIONAL,
+              type: :TYPE_STRING,
+              type_name: nil,
+              default_value: nil,
+              options: nil,
+              oneof_index: nil,
+              json_name: "queueName",
+              proto3_optional: nil,
+              __unknown_fields__: []
+            },
+            %Google.Protobuf.FieldDescriptorProto{
+              name: "data",
+              extendee: nil,
+              number: 5,
+              label: :LABEL_OPTIONAL,
+              type: :TYPE_STRING,
+              type_name: nil,
+              default_value: nil,
+              options: nil,
+              oneof_index: nil,
+              json_name: "data",
+              proto3_optional: nil,
+              __unknown_fields__: []
+            }
+          ],
+          nested_type: [],
+          enum_type: [],
+          extension_range: [],
+          extension: [],
+          options: nil,
+          oneof_decl: [],
+          reserved_range: [],
+          reserved_name: [],
+          __unknown_fields__: []
+        },
+        %Google.Protobuf.DescriptorProto{
+          name: "WorkReportResponse",
+          field: [
+            %Google.Protobuf.FieldDescriptorProto{
+              name: "status",
+              extendee: nil,
+              number: 1,
+              label: :LABEL_OPTIONAL,
+              type: :TYPE_STRING,
+              type_name: nil,
+              default_value: nil,
+              options: nil,
+              oneof_index: nil,
+              json_name: "status",
+              proto3_optional: nil,
+              __unknown_fields__: []
+            }
+          ],
+          nested_type: [],
+          enum_type: [],
+          extension_range: [],
+          extension: [],
+          options: nil,
+          oneof_decl: [],
+          reserved_range: [],
+          reserved_name: [],
+          __unknown_fields__: []
         }
       ],
       enum_type: [],
@@ -944,6 +1194,15 @@ defmodule Queue.QueueService.Service do
               client_streaming: false,
               server_streaming: false,
               __unknown_fields__: []
+            },
+            %Google.Protobuf.MethodDescriptorProto{
+              name: "WorkReport",
+              input_type: ".queue.WorkReportRequest",
+              output_type: ".queue.WorkReportResponse",
+              options: nil,
+              client_streaming: false,
+              server_streaming: false,
+              __unknown_fields__: []
             }
           ],
           options: nil,
@@ -956,7 +1215,7 @@ defmodule Queue.QueueService.Service do
         location: [
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [],
-            span: [0, 0, 56, 1],
+            span: [0, 0, 69, 1],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1532,7 +1791,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [4, 7, 2, 0],
-            span: [39, 2, 20],
+            span: [39, 2, 19],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1540,7 +1799,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [4, 7, 2, 0, 5],
-            span: [39, 2, 8],
+            span: [39, 2, 7],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1548,7 +1807,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [4, 7, 2, 0, 1],
-            span: [39, 9, 15],
+            span: [39, 8, 14],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1556,7 +1815,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [4, 7, 2, 0, 3],
-            span: [39, 18, 19],
+            span: [39, 17, 18],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1739,8 +1998,232 @@ defmodule Queue.QueueService.Service do
             __unknown_fields__: []
           },
           %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9],
+            span: [51, 0, 57, 1],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 1],
+            span: [51, 8, 25],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 0],
+            span: [52, 2, 19],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 0, 5],
+            span: [52, 2, 7],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 0, 1],
+            span: [52, 8, 14],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 0, 3],
+            span: [52, 17, 18],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 1],
+            span: [53, 2, 23],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 1, 5],
+            span: [53, 2, 8],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 1, 1],
+            span: [53, 9, 18],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 1, 3],
+            span: [53, 21, 22],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 2],
+            span: [54, 2, 20],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 2, 5],
+            span: [54, 2, 8],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 2, 1],
+            span: [54, 9, 15],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 2, 3],
+            span: [54, 18, 19],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 3],
+            span: [55, 2, 24],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 3, 5],
+            span: [55, 2, 8],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 3, 1],
+            span: [55, 9, 19],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 3, 3],
+            span: [55, 22, 23],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 4],
+            span: [56, 2, 18],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 4, 5],
+            span: [56, 2, 8],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 4, 1],
+            span: '8\t\r',
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 9, 2, 4, 3],
+            span: [56, 16, 17],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 10],
+            span: [59, 0, 61, 1],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 10, 1],
+            span: [59, 8, 26],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 10, 2, 0],
+            span: [60, 2, 20],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 10, 2, 0, 5],
+            span: [60, 2, 8],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 10, 2, 0, 1],
+            span: [60, 9, 15],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [4, 10, 2, 0, 3],
+            span: [60, 18, 19],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0],
-            span: [51, 0, 56, 1],
+            span: [63, 0, 69, 1],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1748,7 +2231,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 1],
-            span: [51, 8, 20],
+            span: [63, 8, 20],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1756,7 +2239,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 0],
-            span: [52, 2, 78],
+            span: [64, 2, 78],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1764,7 +2247,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 0, 1],
-            span: [52, 6, 20],
+            span: [64, 6, 20],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1772,7 +2255,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 0, 2],
-            span: [52, 22, 43],
+            span: [64, 22, 43],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1780,7 +2263,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 0, 3],
-            span: '46L',
+            span: '@6L',
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1788,7 +2271,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 1],
-            span: [53, 2, 90],
+            span: [65, 2, 90],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1796,7 +2279,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 1, 1],
-            span: [53, 6, 24],
+            span: [65, 6, 24],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1804,7 +2287,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 1, 2],
-            span: [53, 26, 51],
+            span: [65, 26, 51],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1812,7 +2295,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 1, 3],
-            span: '5>X',
+            span: 'A>X',
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1820,7 +2303,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 2],
-            span: [54, 2, 81],
+            span: [66, 2, 81],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1828,7 +2311,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 2, 1],
-            span: [54, 6, 21],
+            span: [66, 6, 21],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1836,7 +2319,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 2, 2],
-            span: [54, 23, 45],
+            span: [66, 23, 45],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1844,7 +2327,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 2, 3],
-            span: '68O',
+            span: 'B8O',
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1852,7 +2335,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 3],
-            span: [55, 2, 72],
+            span: [67, 2, 72],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1860,7 +2343,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 3, 1],
-            span: [55, 6, 18],
+            span: [67, 6, 18],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1868,7 +2351,7 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 3, 2],
-            span: [55, 20, 39],
+            span: [67, 20, 39],
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1876,7 +2359,39 @@ defmodule Queue.QueueService.Service do
           },
           %Google.Protobuf.SourceCodeInfo.Location{
             path: [6, 0, 2, 3, 3],
-            span: '72F',
+            span: 'C2F',
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [6, 0, 2, 4],
+            span: [68, 2, 66],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [6, 0, 2, 4, 1],
+            span: [68, 6, 16],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [6, 0, 2, 4, 2],
+            span: [68, 18, 35],
+            leading_comments: nil,
+            trailing_comments: nil,
+            leading_detached_comments: [],
+            __unknown_fields__: []
+          },
+          %Google.Protobuf.SourceCodeInfo.Location{
+            path: [6, 0, 2, 4, 3],
+            span: 'D.@',
             leading_comments: nil,
             trailing_comments: nil,
             leading_detached_comments: [],
@@ -1900,6 +2415,8 @@ defmodule Queue.QueueService.Service do
   rpc :WorkerHeartBeat, Queue.WorkerHeartbeatRequest, Queue.WorkerHeartbeatResponse
 
   rpc :DispatchWork, Queue.DispatchWorkRequest, Queue.DispatchWorkResponse
+
+  rpc :WorkReport, Queue.WorkReportRequest, Queue.WorkReportResponse
 end
 
 defmodule Queue.QueueService.Stub do

@@ -4,6 +4,7 @@ end
 defmodule PeregrineQueue.QueueService do
   use GRPC.Server, service: Queue.QueueService.Service
   alias PeregrineQueue.WorkerRegistry
+  alias PeregrineQueue.JobDataService
 
   def register_worker(
         %Queue.RegisterWorkerRequest{
@@ -18,6 +19,25 @@ defmodule PeregrineQueue.QueueService do
     WorkerRegistry.register_worker(queue, %{worker_id: id, worker_address: address})
 
     %Queue.RegisterWorkerResponse{status: "success", message: "Worker registered successfully"}
+  end
+
+  def work_report(%Queue.WorkReportRequest{
+    queue_name: queue,
+    data: data,
+    worker_id: worker_id,
+    job_id: job_id,
+    status: status
+  }, _) do
+    #get job data
+    #update job data
+
+    IO.puts("WORK REPORT")
+    job_data = JobDataService.get_job_data_by_oban_id(job_id)
+    |> IO.inspect
+
+    JobDataService.update_job_data(job_data, %{status: status})
+
+    %Queue.WorkReportResponse{status: "success"}
   end
 
   def get_workers_for_queue(%Queue.GetWorkersForQueueRequest{
@@ -46,11 +66,6 @@ defmodule PeregrineQueue.QueueService do
     WorkerRegistry.register_heartbeat(worker_id)
 
     %Queue.WorkerHeartbeatResponse{status: "success", message: "Heartbeat registered"}
-  end
-
-  def dispatch_work(job_id, queue_name, worker_address, data) do
-    IO.puts("Dispatching work for job #{job_id} in queue #{queue_name}")
-    {:ok, "Work dispatched"}
   end
 
 end

@@ -37,7 +37,7 @@ message WorkerHeartbeatResponse {
 }
 
 message DispatchWorkRequest {
-  string job_id = 1;
+  int32 job_id = 1;
   string queue_name = 2;
   string data = 3;
 }
@@ -49,10 +49,23 @@ message DispatchWorkResponse {
 
 }
 
+message WorkReportRequest {
+  int32 job_id = 1;
+  string worker_id = 2;
+  string status = 3;
+  string queue_name = 4;
+  string data = 5;
+}
+
+message WorkReportResponse {
+  string status = 1;
+}
+
 service QueueService {
   rpc RegisterWorker (RegisterWorkerRequest) returns (RegisterWorkerResponse);
   rpc GetWorkersForQueue (GetWorkersForQueueRequest) returns (GetWorkersForQueueResponse);
   rpc WorkerHeartBeat (WorkerHeartbeatRequest) returns (WorkerHeartbeatResponse);
   rpc DispatchWork (DispatchWorkRequest) returns (DispatchWorkResponse);
+  rpc WorkReport (WorkReportRequest) returns (WorkReportResponse);
 }
 

@@ -14,6 +14,11 @@ pub mod queue {
     tonic::include_proto!("queue");
 }
 
+const WORKER_ID: &str = "fast_running_rust_worker";
+const WORKER_ADDRESS: &str = "127.0.0.1:50053";
+const QUEUE_ADDRESS: &str = "http://localhost:50051";
+const QUEUE_NAME: &str = "media_update";
+
 #[derive(Debug, Default)]
 pub struct MyQueueService;
 
@@ -44,6 +49,13 @@ impl QueueService for MyQueueService {
         ))
     }
 
+    async fn work_report(
+        &self,
+        _: Request<queue::WorkReportRequest>,
+    ) -> Result<Response<queue::WorkReportResponse>, Status> {
+        Err(Status::unimplemented("work_report is not implemented"))
+    }
+
     async fn dispatch_work(
         &self,
         request: Request<DispatchWorkRequest>,
@@ -54,8 +66,8 @@ impl QueueService for MyQueueService {
         // Return a dummy response
         let reply = DispatchWorkResponse {
             status: "complete".to_string(),
-            worker_id: "worker_1".to_string(),
-            worker_address: "localhost:50052".to_string(),
+            worker_id: WORKER_ID.to_string(),
+            worker_address: WORKER_ADDRESS.to_string(),
         };
 
         Ok(Response::new(reply))
@@ -82,7 +94,7 @@ async fn send_heartbeat(
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tokio::spawn(async {
-        let addr = "127.0.0.1:50052".parse().unwrap();
+        let addr = WORKER_ADDRESS.parse().unwrap();
         let queue_service = MyQueueService::default();
 
         println!("QueueService server listening on {}", addr);
@@ -94,19 +106,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .unwrap();
     });
 
-    let mut client = QueueServiceClient::connect("http://localhost:50051").await?;
+    let mut client = QueueServiceClient::connect(QUEUE_ADDRESS).await?;
 
     let request = tonic::Request::new(RegisterWorkerRequest {
-        queue_name: "data_sync".to_string(),
-        worker_id: "worker_1".to_string(),
-        worker_address: "localhost:50052".to_string(),
+        queue_name: QUEUE_NAME.to_string(),
+        worker_id: WORKER_ID.to_string(),
+        worker_address: WORKER_ADDRESS.to_string(),
     });
 
     let response = client.register_worker(request).await?;
 
     println!("Register Worker Response: {:?}", response.get_ref());
 
-    send_heartbeat(&mut client, "worker_1".to_string()).await?;
+    send_heartbeat(&mut client, WORKER_ID.to_string()).await?;
 
     Ok(())
 }

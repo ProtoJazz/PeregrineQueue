@@ -26,7 +26,7 @@ defmodule PeregrineQueue.Workers.GenericWorker do
           {:ok, channel} = WorkerClient.start_link(attempt_worker.worker_address)
 
           IO.puts("Channel: #{inspect(channel)}")
-          {status, response} = WorkerClient.dispatch_work(channel, data, queue_name, "job_id")
+          {status, response} = WorkerClient.dispatch_work(channel, data, queue_name, job.id)
           IO.inspect(response, label: " dispatch work Response")
           IO.inspect(status, label: "Status")
           #handle long running shit too, but for now assume 1 is done
