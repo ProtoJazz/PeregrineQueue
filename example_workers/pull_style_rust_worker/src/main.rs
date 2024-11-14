@@ -4,7 +4,7 @@ use queue::queue_service_server::{QueueService, QueueServiceServer};
 use queue::{
     DispatchWorkRequest, DispatchWorkResponse, GetWorkersForQueueRequest,
     GetWorkersForQueueResponse, RegisterWorkerRequest, RegisterWorkerResponse,
-    WorkerHeartbeatResponse,
+    WorkerHeartbeatResponse, PullWorkRequest
 };
 use tokio::time::sleep;
 use tokio::time::Duration;
@@ -14,10 +14,10 @@ pub mod queue {
     tonic::include_proto!("queue");
 }
 
-const WORKER_ID: &str = "fast_running_rust_worker";
-const WORKER_ADDRESS: &str = "127.0.0.1:50053";
+const WORKER_ID: &str = "pull_style_rust_worker";
+const WORKER_ADDRESS: &str = "127.0.0.1:50054";
 const QUEUE_ADDRESS: &str = "http://localhost:50051";
-const QUEUE_NAME: &str = "media_update";
+const QUEUE_NAME: &str = "web_scrapping";
 
 #[derive(Debug, Default)]
 pub struct MyQueueService;
@@ -98,6 +98,23 @@ async fn send_heartbeat(
     }
 }
 
+async fn pull_work(
+    client: &mut QueueServiceClient<Channel>,
+    worker_id: String,
+) -> Result<(), Box<dyn std::error::Error>> {
+    loop {
+        let request = tonic::Request::new(PullWorkRequest {
+            queue_name: QUEUE_NAME.to_string(),
+        });
+
+        let response = client.pull_work(request).await?;
+        println!("Pull Work Response: {:?}", response.get_ref());
+
+        // Wait for 30 seconds before the next heartbeat
+        sleep(Duration::from_secs(30)).await;
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tokio::spawn(async {
@@ -125,7 +142,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Register Worker Response: {:?}", response.get_ref());
 
-    send_heartbeat(&mut client, WORKER_ID.to_string()).await?;
+    //send_heartbeat(&mut client, WORKER_ID.to_string()).await?;
+    pull_work(&mut client, WORKER_ID.to_string()).await?;
 
     Ok(())
 }

@@ -56,6 +56,13 @@ impl QueueService for MyQueueService {
         Err(Status::unimplemented("work_report is not implemented"))
     }
 
+    async fn pull_work(
+        &self,
+        _: Request<queue::PullWorkRequest>,
+    ) -> Result<Response<queue::PullWorkResponse>, Status> {
+        Err(Status::unimplemented("pull_work is not implemented"))
+    }
+
     async fn dispatch_work(
         &self,
         request: Request<DispatchWorkRequest>,

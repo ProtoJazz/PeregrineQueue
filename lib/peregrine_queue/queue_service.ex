@@ -40,6 +40,24 @@ defmodule PeregrineQueue.QueueService do
     %Queue.WorkReportResponse{status: "success"}
   end
 
+  def pull_work(%Queue.PullWorkRequest{
+    queue_name: queue
+  }, _) do
+    IO.puts("PULL WORK")
+    {job_data, job_count} = JobDataService.get_next_job_data(queue)
+    |> IO.inspect
+
+    if job_data == nil do
+      %Queue.PullWorkResponse{job_id: "", data: "", queue_name: ""}
+    else
+      %Queue.PullWorkResponse{
+        job_id: job_data.oban_id,
+        data: job_data.payload,
+        queue_name: job_data.queue
+      }
+    end
+  end
+
   def get_workers_for_queue(%Queue.GetWorkersForQueueRequest{
     queue_name: queue
   }, _) do

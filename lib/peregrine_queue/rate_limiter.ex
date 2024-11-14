@@ -9,6 +9,14 @@ defmodule PeregrineQueue.JobRateLimiter do
   end
 
   def can_execute?(queue_name) do
+    all_queues =
+      Application.get_env(:peregrine_queue, PeregrineQueue, %{push_queues: [], pull_queues: []})
+      |> (&(&1[:push_queues] ++ &1[:pull_queues])).()
+
+
+    queue = Enum.find(all_queues, fn queue -> queue.name == queue_name end)
+    rate_limit = queue.rate_limit || @rate_limit
+    time_window = queue.rate_window || @time_window
     now = :erlang.system_time(:millisecond)
 
     executions = :ets.lookup(:job_rate_limiter, queue_name)
@@ -17,9 +25,9 @@ defmodule PeregrineQueue.JobRateLimiter do
       [{_, timestamps}] -> timestamps
     end
 
-    recent_executions = Enum.filter(executions, fn timestamp -> now - timestamp < @time_window end)
+    recent_executions = Enum.filter(executions, fn timestamp -> now - timestamp < time_window end)
 
-    if length(recent_executions) < @rate_limit do
+    if length(recent_executions) < rate_limit do
       :ets.insert(:job_rate_limiter, {queue_name, [now | recent_executions]})
       :allowed
     else

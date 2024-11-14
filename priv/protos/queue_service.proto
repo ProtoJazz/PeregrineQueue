@@ -49,6 +49,16 @@ message DispatchWorkResponse {
 
 }
 
+message PullWorkRequest {
+  string queue_name = 1;
+}
+
+message PullWorkResponse{
+  int32 job_id = 1;
+  string queue_name = 2;
+  string data = 3;
+}
+
 message WorkReportRequest {
   int32 job_id = 1;
   string worker_id = 2;
@@ -67,5 +77,6 @@ service QueueService {
   rpc WorkerHeartBeat (WorkerHeartbeatRequest) returns (WorkerHeartbeatResponse);
   rpc DispatchWork (DispatchWorkRequest) returns (DispatchWorkResponse);
   rpc WorkReport (WorkReportRequest) returns (WorkReportResponse);
+  rpc PullWork (PullWorkRequest) returns (PullWorkResponse);
 }
 

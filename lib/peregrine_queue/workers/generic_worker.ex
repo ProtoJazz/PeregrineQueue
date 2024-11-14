@@ -7,9 +7,6 @@ defmodule PeregrineQueue.Workers.GenericWorker do
   alias PeregrineQueue.JobRateLimiter
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"queue_name" => queue_name, "data" => data}} = job) do
-    # Lockout the job while we attempt it
-    IO.inspect(job, label: "Job")
-
     case JobRateLimiter.can_execute?(queue_name) do
 
       :allowed ->
