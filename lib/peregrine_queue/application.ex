@@ -18,6 +18,7 @@ defmodule PeregrineQueue.Application do
       {GRPC.Server.Supervisor,
        endpoint: PeregrineQueueWeb.GRPCEndpoint, port: 50051, start_server: true},
       {PeregrineQueue.WorkerRegistry, []},
+      {PeregrineQueue.JobRateLimiter, []},
       # Start the PubSub system
       {Phoenix.PubSub, name: PeregrineQueue.PubSub},
       # Start Finch
