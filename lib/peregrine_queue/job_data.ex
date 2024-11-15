@@ -17,6 +17,6 @@ defmodule PeregrineQueue.JobData do
   def changeset(job_data, attrs) do
     job_data
     |> cast(attrs, [:oban_id, :payload, :status, :worker_id, :worker_address, :queue_name])
-    |> validate_required([:oban_id, :payload, :status])
+    |> validate_required([:payload, :status])
   end
 end

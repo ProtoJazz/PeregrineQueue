@@ -1,10 +1,11 @@
-defmodule PeregrineQueue.QueueService.Reflection do
+defmodule PeregrineQueue.QueueServer.Reflection do
   use GrpcReflection.Server, version: :v1alpha, services: [Queue.QueueService.Service]
 end
-defmodule PeregrineQueue.QueueService do
+defmodule PeregrineQueue.QueueServer do
   use GRPC.Server, service: Queue.QueueService.Service
   alias PeregrineQueue.WorkerRegistry
   alias PeregrineQueue.JobDataService
+  alias PeregrineQueue.JobRateLimiter
 
   def register_worker(
         %Queue.RegisterWorkerRequest{
@@ -32,7 +33,7 @@ defmodule PeregrineQueue.QueueService do
     #update job data
 
     IO.puts("WORK REPORT")
-    job_data = JobDataService.get_job_data_by_oban_id(job_id)
+    job_data = JobDataService.get_job_data_by_job_data_id(job_id)
     |> IO.inspect
 
     JobDataService.update_job_data(job_data, %{status: status})
@@ -41,20 +42,36 @@ defmodule PeregrineQueue.QueueService do
   end
 
   def pull_work(%Queue.PullWorkRequest{
-    queue_name: queue
+    queue_name: queue_name
   }, _) do
-    IO.puts("PULL WORK")
-    {job_data, job_count} = JobDataService.get_next_job_data(queue)
-    |> IO.inspect
+    config = Application.get_env(:peregrine_queue, PeregrineQueue, [])
+    pull_queues = Keyword.get(config, :pull_queues, [])
+    queue = Enum.find(pull_queues, fn queue -> queue.name == queue_name end)
+      {job_data, job_count} = JobDataService.get_next_job_data(queue_name)
+      |> IO.inspect
 
-    if job_data == nil do
-      %Queue.PullWorkResponse{job_id: "", data: "", queue_name: ""}
-    else
-      %Queue.PullWorkResponse{
-        job_id: job_data.oban_id,
-        data: job_data.payload,
-        queue_name: job_data.queue
-      }
+      IO.inspect(queue)
+
+      if job_data == nil or job_count >= queue.concurrency do
+        IO.puts("Job data is nil or job count is greater than or equal to queue concurrency")
+        %Queue.PullWorkResponse{job_id: -1, data: "", queue_name: ""}
+      else
+        case JobRateLimiter.can_execute?(queue_name) do
+          :allowed ->
+            job_data
+              |> PeregrineQueue.JobData.changeset(%{status: :active})
+              |> PeregrineQueue.Repo.update!()
+
+              %Queue.PullWorkResponse{
+                job_id: job_data.id,
+                data: job_data.payload,
+                queue_name: job_data.queue_name
+              }
+          :denied ->
+            IO.puts("Rate limit exceeded")
+            %Queue.PullWorkResponse{job_id: -1, data: "", queue_name: ""}
+      end
+
     end
   end
 

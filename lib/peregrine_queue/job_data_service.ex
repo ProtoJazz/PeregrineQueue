@@ -12,11 +12,17 @@ defmodule PeregrineQueue.JobDataService do
   end
 
   def get_next_job_data(queue) do
-    next_job = Repo.one(from(j in JobData, where: j.queue_name == ^queue, where: j.status == :pending, order_by: [asc: j.inserted_at]))
-
+    next_job = Repo.one(
+      from(j in JobData,
+        where: j.queue_name == ^queue,
+        where: j.status == :pending,
+        order_by: [asc: j.inserted_at],
+        limit: 1
+      )
+    )
     job_count = Repo.aggregate(
       from(j in JobData,
-        where: j.status in [:pending, :active]
+        where: j.status in [:active]
       ),
       :count,
       :id

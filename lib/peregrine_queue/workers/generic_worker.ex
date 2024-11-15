@@ -10,7 +10,7 @@ defmodule PeregrineQueue.Workers.GenericWorker do
     case JobRateLimiter.can_execute?(queue_name) do
 
       :allowed ->
-        workers = PeregrineQueue.QueueService.get_workers_for_queue(queue_name)
+        workers = PeregrineQueue.QueueServer.get_workers_for_queue(queue_name)
 
         case workers do
           [] ->
@@ -28,7 +28,7 @@ defmodule PeregrineQueue.Workers.GenericWorker do
               {:ok, channel} = WorkerClient.start_link(attempt_worker.worker_address)
 
               IO.puts("Channel: #{inspect(channel)}")
-              {status, response} = WorkerClient.dispatch_work(channel, data, queue_name, job.id)
+              {status, response} = WorkerClient.dispatch_work(channel, data, queue_name, job_data.id)
               IO.inspect(response, label: " dispatch work Response")
               IO.inspect(status, label: "Status")
 

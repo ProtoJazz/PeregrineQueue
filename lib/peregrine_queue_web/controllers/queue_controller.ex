@@ -1,9 +1,9 @@
 defmodule PeregrineQueueWeb.QueueController do
   use PeregrineQueueWeb, :controller
-  alias PeregrineQueue.DynamicQueue
+  alias PeregrineQueue.EnqueueService
 
   def enqueue(conn, %{"queue" => queue, "message" => message}) do
-    {status, message} = DynamicQueue.enqueue_job(queue, message)
+    {status, message} = EnqueueService.enqueue_job(queue, message)
 
     if status == :ok do
       conn

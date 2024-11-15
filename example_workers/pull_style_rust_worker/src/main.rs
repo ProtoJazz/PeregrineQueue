@@ -4,12 +4,12 @@ use queue::queue_service_server::{QueueService, QueueServiceServer};
 use queue::{
     DispatchWorkRequest, DispatchWorkResponse, GetWorkersForQueueRequest,
     GetWorkersForQueueResponse, RegisterWorkerRequest, RegisterWorkerResponse,
-    WorkerHeartbeatResponse, PullWorkRequest
+    WorkerHeartbeatResponse, PullWorkRequest, WorkReportRequest, WorkReportResponse
 };
 use tokio::time::sleep;
 use tokio::time::Duration;
 use tonic::{transport::Channel, transport::Server, Request, Response, Status};
-
+use rand::Rng;
 pub mod queue {
     tonic::include_proto!("queue");
 }
@@ -110,8 +110,27 @@ async fn pull_work(
         let response = client.pull_work(request).await?;
         println!("Pull Work Response: {:?}", response.get_ref());
 
-        // Wait for 30 seconds before the next heartbeat
-        sleep(Duration::from_secs(30)).await;
+        if(response.get_ref().job_id == -1){
+            println!("No work available");
+            sleep(Duration::from_secs(30)).await;
+            continue;
+        }
+        let random_sleep = rand::thread_rng().gen_range(20..100);
+        sleep(Duration::from_secs(random_sleep)).await;
+
+
+        let work_report = tonic::Request::new(queue::WorkReportRequest {
+            job_id: response.get_ref().job_id,
+            worker_id: WORKER_ID.to_string(),
+            status: "complete".to_string(),
+            queue_name: QUEUE_NAME.to_string(),
+            data: "{}".to_string(),
+    
+        });
+
+        let response = client.work_report(work_report).await?;
+        println!("Work Report Response: {:?}", response.get_ref());
+    
     }
 }
 
