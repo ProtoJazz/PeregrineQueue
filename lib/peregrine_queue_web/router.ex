@@ -22,7 +22,7 @@ defmodule PeregrineQueueWeb.Router do
 
   scope "/", PeregrineQueueWeb do
     pipe_through :browser
-
+    live "/dashboard", DashboardLive.Index, :index
     get "/", PageController, :home
   end
 

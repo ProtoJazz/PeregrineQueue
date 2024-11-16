@@ -1,0 +1,40 @@
+<.header>
+  Listing Dashboard
+  <:actions>
+    <.link patch={~p"/dashboard/new"}>
+      <.button>New Dashboard</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<%!-- <.table
+  id="dashboard"
+  rows={@streams.dashboard_collection}
+  row_click={fn {_id, dashboard} -> JS.navigate(~p"/dashboard/#{dashboard}") end}
+>
+  <:action :let={{_id, dashboard}}>
+    <div class="sr-only">
+      <.link navigate={~p"/dashboard/#{dashboard}"}>Show</.link>
+    </div>
+    <.link patch={~p"/dashboard/#{dashboard}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, dashboard}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: dashboard.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table> --%>
+
+<%!-- <.modal :if={@live_action in [:new, :edit]} id="dashboard-modal" show on_cancel={JS.patch(~p"/dashboard")}>
+  <.live_component
+    module={PeregrineQueueWeb.DashboardLive.FormComponent}
+    id={@dashboard.id || :new}
+    title={@page_title}
+    action={@live_action}
+    dashboard={@dashboard}
+    patch={~p"/dashboard"}
+  />
+</.modal> --%>
