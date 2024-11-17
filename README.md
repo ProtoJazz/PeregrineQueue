@@ -1,4 +1,5 @@
 # PeregrineQueue
+![image](https://github.com/user-attachments/assets/52875c61-be79-4170-8676-5a388457a2c5)
 
 To start your Phoenix server:
 
