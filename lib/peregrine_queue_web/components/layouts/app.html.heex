@@ -772,7 +772,7 @@
       <ul class="space-y-2">
         <li>
           <a
-            href="#"
+            href="/dashboard"
             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
           >
             <svg
@@ -809,7 +809,7 @@
               >
               </path>
             </svg>
-            <span class="flex-1 ml-3 text-left whitespace-nowrap">Pages</span>
+            <span class="flex-1 ml-3 text-left whitespace-nowrap">Queues</span>
             <svg
               aria-hidden="true"
               class="w-6 h-6"
@@ -825,15 +825,15 @@
               </path>
             </svg>
           </button>
-          <ul id="dropdown-pages" class="hidden py-2 space-y-2">
-            <li>
-              <a
-                href="#"
-                class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
-              >
-                Settings
-              </a>
-            </li>
+          <ul id="dropdown-pages" class="py-2 space-y-2">
+            <%= for queue <- PeregrineQueue.QueueServer.get_queues do %>
+              <li>
+               <%= live_patch to: ~p"/queues/#{queue.name}",
+                    class: "flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700" do %>
+                  <%= queue.name %>
+                <% end %>
+              </li>
+            <% end %>
           </ul>
         </li>
       </ul>

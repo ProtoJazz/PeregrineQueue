@@ -103,6 +103,13 @@ defmodule PeregrineQueue.QueueServer do
     %Queue.WorkerHeartbeatResponse{status: "success", message: "Heartbeat registered"}
   end
 
+  def get_queues() do
+    config = Application.get_env(:peregrine_queue, PeregrineQueue, [])
+    pull_queues = Keyword.get(config, :pull_queues, [])
+    push_queues = Keyword.get(config, :push_queues, [])
+    pull_queues ++ push_queues
+  end
+
 
 
 end

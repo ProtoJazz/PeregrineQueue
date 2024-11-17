@@ -61,6 +61,7 @@ Hooks.DashboardChart = {
     },
     renderChart(data) {
         console.log(data);
+        chartLinks = data.chart_links;
         const options = {
             series: data.series_data,
             chart: {
@@ -71,10 +72,18 @@ Hooks.DashboardChart = {
                 },
                 type: "bar",
                 width: "100%",
-                height: 400,
+                height: data.chart_height,
                 toolbar: {
                     show: false,
-                }
+                },
+                events: {
+                    dataPointSelection: function (event, chartContext, { dataPointIndex, seriesIndex }) {
+                        const selectedLink = chartLinks[dataPointIndex];
+                        if (selectedLink) {
+                            window.location.href = selectedLink;
+                        }
+                    }
+                },
             },
             fill: {
                 opacity: 1,
@@ -135,7 +144,7 @@ Hooks.DashboardChart = {
                     top: -20
                 },
             }
-          
+
         }
 
         if (document.getElementById("bar-chart") && typeof ApexCharts !== 'undefined') {

@@ -1,28 +1,28 @@
 <section class="bg-white dark:bg-gray-900">
   <div class="max-w-l w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6">
-    <div class="grid grid-cols-2 py-3">
+    <div class="grid grid-cols-2 py-1">
       <dl>
         <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">Successful</dt>
         <dd class="leading-none text-xl font-bold text-green-500 dark:text-green-400">
-          <%= @jobs_stats.successful_jobs %>
+          <%= @jobs_stats.complete %>
         </dd>
       </dl>
       <dl>
         <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">Active</dt>
         <dd class="leading-none text-xl font-bold text-yellow-500 dark:text-yellow-400">
-          <%= @jobs_stats.active_jobs %>
+          <%= @jobs_stats.active %>
         </dd>
       </dl>
       <dl>
         <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">Pending</dt>
         <dd class="leading-none text-xl font-bold text-gray-500 dark:text-gray-400">
-          <%= @jobs_stats.pending_jobs %>
+          <%= @jobs_stats.pending %>
         </dd>
       </dl>
       <dl>
         <dt class="text-base font-normal text-gray-500 dark:text-gray-400 pb-1">Failing</dt>
         <dd class="leading-none text-xl font-bold text-red-600 dark:text-red-500">
-          <%= @jobs_stats.failing_jobs %>
+          <%= @jobs_stats.failed %>
         </dd>
       </dl>
     </div>
@@ -125,47 +125,5 @@
     </div>
   </div>
 </section>
-<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
+<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
 <.paginated_table jobs={@jobs} meta={@meta} />
-
-<%!-- <section class="bg-white dark:bg-gray-900">
-<input
-        phx-hook="Datepicker"
-        id="myInput"
-        type="text"
-        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-        placeholder="Select date"
-      />
-</section> --%>
-
-<%!-- <.table
-  id="dashboard"
-  rows={@streams.dashboard_collection}
-  row_click={fn {_id, dashboard} -> JS.navigate(~p"/dashboard/#{dashboard}") end}
->
-  <:action :let={{_id, dashboard}}>
-    <div class="sr-only">
-      <.link navigate={~p"/dashboard/#{dashboard}"}>Show</.link>
-    </div>
-    <.link patch={~p"/dashboard/#{dashboard}/edit"}>Edit</.link>
-  </:action>
-  <:action :let={{id, dashboard}}>
-    <.link
-      phx-click={JS.push("delete", value: %{id: dashboard.id}) |> hide("##{id}")}
-      data-confirm="Are you sure?"
-    >
-      Delete
-    </.link>
-  </:action>
-</.table> --%>
-
-<%!-- <.modal :if={@live_action in [:new, :edit]} id="dashboard-modal" show on_cancel={JS.patch(~p"/dashboard")}>
-  <.live_component
-    module={PeregrineQueueWeb.DashboardLive.FormComponent}
-    id={@dashboard.id || :new}
-    title={@page_title}
-    action={@live_action}
-    dashboard={@dashboard}
-    patch={~p"/dashboard"}
-  />
-</.modal> --%>

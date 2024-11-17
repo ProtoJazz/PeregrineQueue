@@ -50,7 +50,7 @@ defmodule PeregrineQueue.EnqueueService do
 
   defp update_job_data_with_oban_id(job_data, oban_job_id) do
     job_data
-    |> PeregrineQueue.JobData.changeset(%{oban_id: oban_job_id})
+    |> PeregrineQueue.JobData.changeset(%{oban_job_id: oban_job_id})
     |> PeregrineQueue.Repo.update!()
   end
 

@@ -60,7 +60,7 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
-
+config :flop, repo: PeregrineQueue.Repo
 config :peregrine_queue, Oban,
   engine: Oban.Engines.Basic,
   queues: :runtime_config,

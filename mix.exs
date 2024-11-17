@@ -54,7 +54,8 @@ defmodule PeregrineQueue.MixProject do
       {:grpc, "~> 0.9.0"},
       {:grpc_reflection, "~> 0.1.4"},
       {:protobuf, "~> 0.12.0"},
-      {:protobuf_generate, "~> 0.1.3"}
+      {:protobuf_generate, "~> 0.1.3"},
+      {:flop_phoenix, "~> 0.20.0"}
     ]
   end
 

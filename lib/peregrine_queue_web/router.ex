@@ -23,6 +23,7 @@ defmodule PeregrineQueueWeb.Router do
   scope "/", PeregrineQueueWeb do
     pipe_through :browser
     live "/dashboard", DashboardLive.Index, :index
+    live "/queues/:name", QueueLive.Show, :show
     get "/", PageController, :home
   end
 
