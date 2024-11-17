@@ -103,4 +103,6 @@ defmodule PeregrineQueue.QueueServer do
     %Queue.WorkerHeartbeatResponse{status: "success", message: "Heartbeat registered"}
   end
 
+
+
 end

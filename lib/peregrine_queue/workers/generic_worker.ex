@@ -5,59 +5,77 @@ defmodule PeregrineQueue.Workers.GenericWorker do
   alias PeregrineQueue.WorkerClient
   alias PeregrineQueue.Repo
   alias PeregrineQueue.JobRateLimiter
+
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"queue_name" => queue_name, "data" => data}} = job) do
-    case JobRateLimiter.can_execute?(queue_name) do
+  def perform(%Oban.Job{args: %{"queue_name" => queue_name, "data" => data, "job_data_id" => job_id}} = job) do
+    IO.puts("Performing job for queue #{queue_name}")
+    try do
+      case JobRateLimiter.can_execute?(queue_name) do
+        :allowed ->
+          handle_work(queue_name, data, job_id)
 
-      :allowed ->
-        workers = PeregrineQueue.QueueServer.get_workers_for_queue(queue_name)
+        :denied ->
+          IO.puts("Rate limit exceeded for queue #{queue_name}")
+          {:error, "Rate limit exceeded"}
+      end
+    rescue
+      exception ->
+        error_message = "An error occurred during job execution: #{inspect(exception)}"
+        IO.puts(error_message)
+        update_job_data_error(job_id, error_message)
+        {:error, error_message}
+    end
+  end
 
-        case workers do
-          [] ->
-            IO.puts("No workers registered for queue #{queue_name}")
-            {:error, "No workers available"}
+  defp handle_work(queue_name, data, job_id) do
+    workers = PeregrineQueue.QueueServer.get_workers_for_queue(queue_name)
 
-          _ ->
-            IO.puts("Workers found for queue #{queue_name}")
-            job_data = JobDataService.get_job_data_by_oban_id(job.id)
-            dispatched_worker = Enum.reduce_while(0..Enum.count(workers), nil, fn x, acc ->
+    case workers do
+      [] ->
+        IO.puts("No workers registered for queue #{queue_name}")
+        {:error, "No workers available"}
 
-              attempt_worker = Enum.at(workers, x)
+      _ ->
+        IO.puts("Workers found for queue #{queue_name}")
+        job_data = JobDataService.get_job_data_by_job_data_id(job_id)
 
-              IO.puts("Attempting worker: #{inspect(attempt_worker)}")
-              {:ok, channel} = WorkerClient.start_link(attempt_worker.worker_address)
+        dispatched_worker = Enum.reduce_while(workers, nil, fn worker, acc ->
+          IO.puts("Attempting worker: #{inspect(worker)}")
 
-              IO.puts("Channel: #{inspect(channel)}")
+          case WorkerClient.start_link(worker.worker_address) do
+            {:ok, channel} ->
               {status, response} = WorkerClient.dispatch_work(channel, data, queue_name, job_data.id)
-              IO.inspect(response, label: " dispatch work Response")
+              IO.inspect(response, label: "Dispatch Work Response")
               IO.inspect(status, label: "Status")
 
-              if(status == :ok) do
-                JobDataService.update_job_data(job_data, %{worker_address: attempt_worker.worker_address, worker_id: attempt_worker.worker_id, status: String.to_atom(response) })
-                {:halt, attempt_worker}
+              if status == :ok do
+                JobDataService.update_job_data(job_data, %{
+                  worker_address: worker.worker_address,
+                  worker_id: worker.worker_id,
+                  status: String.to_atom(response)
+                })
+
+                {:halt, worker}
               else
                 {:cont, nil}
               end
 
-
-            end)
-
-            # Enum.each(workers, fn worker ->
-            #   # Check worker's batch size capability, then send jobs in chunks
-            #   batch_size = Map.get(worker, :batch_size, 1)
-            #   job_batches = Enum.chunk_every([], batch_size)
-
-            #   Enum.each(job_batches, fn batch ->
-            #     nil
-            #     # send_batch_to_worker(worker.address, batch)
-            #   end)
-            # end)
-
-            {:ok, "Job dispatched"}
+            {:error, error} ->
+              IO.puts("Error connecting to worker: #{inspect(error)}")
+              {:cont, nil}
           end
-        :denied ->
-          IO.puts("Rate limit exceeded for queue #{queue_name}")
-          {:error, "Rate limit exceeded"}
+        end)
+
+        if dispatched_worker do
+          {:ok, "Job dispatched"}
+        else
+          {:error, "Failed to dispatch job to any worker"}
+        end
     end
+  end
+
+  defp update_job_data_error(job_id, error_message) do
+    job_data = JobDataService.get_job_data_by_job_data_id(job_id)
+    JobDataService.update_job_data(job_data, %{status: :failed})
   end
 end

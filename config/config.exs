@@ -17,6 +17,8 @@ config :peregrine_queue, PeregrineQueueWeb.Endpoint,
     formats: [html: PeregrineQueueWeb.ErrorHTML, json: PeregrineQueueWeb.ErrorJSON],
     layout: false
   ],
+  # cache_static_manifest: "priv/static/cache_manifest.json",
+  # static_url: [path: "/"],
   pubsub_server: PeregrineQueue.PubSub,
   live_view: [signing_salt: "YoBv4XyG"]
 

@@ -1,17 +1,41 @@
 <!DOCTYPE html>
 <html lang="en" class="[scrollbar-gutter:stable]">
-  <head>
+  <head data-phx-track-static>
+    <!-- Critical CSS inline styles to prevent FOUC -->
+    <style>
+      .loading {
+        visibility: hidden;
+        opacity: 0;
+      }
+      .loaded {
+        visibility: visible;
+        opacity: 1;
+        transition: opacity 0.1s ease-in;
+      }
+    </style>
+    <!-- Preload CSS with higher priority -->
+    <link rel="preload" href={~p"/assets/app.css"} as="style" />
+    <link rel="stylesheet" href={~p"/assets/app.css"} />
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
     <.live_title suffix=" · Phoenix Framework">
       <%= assigns[:page_title] || "PeregrineQueue" %>
     </.live_title>
-    <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+  </head>
+
+  <body class="loading bg-gray-50 dark:bg-gray-900">
+    <%= @inner_content %>
+
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
-  </head>
-  <body class="bg-white antialiased">
-    <%= @inner_content %>
+    <!-- Add this script to handle loading state -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        document.body.classList.remove("loading");
+        document.body.classList.add("loaded");
+      });
+    </script>
   </body>
 </html>

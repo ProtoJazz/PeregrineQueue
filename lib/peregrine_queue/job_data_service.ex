@@ -36,4 +36,55 @@ defmodule PeregrineQueue.JobDataService do
     JobData.changeset(job_data, attrs)
     |> Repo.update()
   end
+
+  def get_jobs_for_time_range(start_time, end_time) do
+    Repo.all(from(j in JobData, where: j.inserted_at >= ^start_time, where: j.inserted_at <= ^end_time))
+  end
+
+  def sort_jobs_for_chart(jobs) do
+    Enum.reduce(jobs, %{}, fn job, acc ->
+      acc
+      |> Map.update(job.queue_name, %{
+        pending: 0,
+        active: 0,
+        failed: 0,
+        complete: 0
+      }, fn status_counts ->
+        Map.update!(status_counts, job.status, &(&1 + 1))
+      end)
+    end)
+  end
+
+  def transform_jobs_for_chart(sorted_jobs) do
+    [
+      %{
+        name: "Successful",
+        color: "#31C48D",
+        data: Enum.map(sorted_jobs, fn {_queue_name, counts} ->
+          Integer.to_string(Map.get(counts, :complete, 0))
+        end)
+      },
+      %{
+        name: "Failing",
+        color: "#F05252",
+        data: Enum.map(sorted_jobs, fn {_queue_name, counts} ->
+          Integer.to_string(Map.get(counts, :failed, 0))
+        end)
+      },
+      %{
+        name: "Active",
+        color: "#FFB020",
+        data: Enum.map(sorted_jobs, fn {_queue_name, counts} ->
+          Integer.to_string(Map.get(counts, :active, 0))
+        end)
+      },
+      %{
+        name: "Pending",
+        color: "#6366F1",
+        data: Enum.map(sorted_jobs, fn {_queue_name, counts} ->
+          Integer.to_string(Map.get(counts, :pending, 0))
+        end)
+      }
+    ]
+  end
 end
