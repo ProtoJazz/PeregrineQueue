@@ -1,4 +1,5 @@
 use crate::queue::WorkerHeartbeatRequest;
+use clap::Parser;
 use queue::queue_service_client::QueueServiceClient;
 use queue::queue_service_server::{QueueService, QueueServiceServer};
 use queue::{
@@ -13,14 +14,43 @@ use tonic::{transport::Channel, transport::Server, Request, Response, Status};
 pub mod queue {
     tonic::include_proto!("queue");
 }
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Config {
+    /// Worker ID
+    #[arg(long, default_value = "fast_running_rust_worker")]
+    worker_id: String,
 
-const WORKER_ID: &str = "fast_running_rust_worker";
-const WORKER_ADDRESS: &str = "127.0.0.1:50053";
-const QUEUE_ADDRESS: &str = "http://localhost:50051";
-const QUEUE_NAME: &str = "media_update";
+    /// Worker Address
+    #[arg(long, default_value = "127.0.0.1:50053")]
+    worker_address: String,
 
-#[derive(Debug, Default)]
-pub struct MyQueueService;
+    /// Queue Address
+    #[arg(long, default_value = "http://localhost:50051")]
+    queue_address: String,
+
+    /// Queue Name
+    #[arg(long, default_value = "media_update")]
+    queue_name: String,
+}
+
+#[derive(Debug, Clone)]
+struct ServiceConfig {
+    worker_id: String,
+    worker_address: String,
+    queue_name: String,
+}
+
+#[derive(Debug)]
+pub struct MyQueueService {
+    config: ServiceConfig,
+}
+
+impl MyQueueService {
+    pub fn new(config: ServiceConfig) -> Self {
+        Self { config }
+    }
+}
 
 #[tonic::async_trait]
 impl QueueService for MyQueueService {
@@ -73,8 +103,8 @@ impl QueueService for MyQueueService {
         // Return a dummy response
         let reply = DispatchWorkResponse {
             status: "complete".to_string(),
-            worker_id: WORKER_ID.to_string(),
-            worker_address: WORKER_ADDRESS.to_string(),
+            worker_id: self.config.worker_id.to_string(),
+            worker_address: self.config.worker_address.to_string(),
         };
 
         Ok(Response::new(reply))
@@ -100,10 +130,22 @@ async fn send_heartbeat(
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    tokio::spawn(async {
-        let addr = WORKER_ADDRESS.parse().unwrap();
-        let queue_service = MyQueueService::default();
+    let config = Config::parse();
+    
+    let worker_address_for_server = config.worker_address.clone();
+    let worker_address_for_client = config.worker_address.clone();
+    let queue_address = config.queue_address.clone();
+    let service_config = ServiceConfig {
+        worker_id: config.worker_id.clone(),
+        worker_address: worker_address_for_server.clone(),
+        queue_name: config.queue_name.clone(),
+    };
+    tokio::spawn(async move {
+        let addr = worker_address_for_server.parse().unwrap();
+       
+        let queue_service = MyQueueService::new(service_config);
 
+        
         println!("QueueService server listening on {}", addr);
 
         Server::builder()
@@ -113,19 +155,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .unwrap();
     });
 
-    let mut client = QueueServiceClient::connect(QUEUE_ADDRESS).await?;
+    let mut client = QueueServiceClient::connect(queue_address).await?;
 
     let request = tonic::Request::new(RegisterWorkerRequest {
-        queue_name: QUEUE_NAME.to_string(),
-        worker_id: WORKER_ID.to_string(),
-        worker_address: WORKER_ADDRESS.to_string(),
+        queue_name: config.queue_name.to_string(),
+        worker_id: config.worker_id.to_string(),
+        worker_address: worker_address_for_client.clone().to_string(),
     });
 
     let response = client.register_worker(request).await?;
 
     println!("Register Worker Response: {:?}", response.get_ref());
 
-    send_heartbeat(&mut client, WORKER_ID.to_string()).await?;
+    send_heartbeat(&mut client, config.worker_id.to_string()).await?;
 
     Ok(())
 }
