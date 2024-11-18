@@ -1,0 +1,81 @@
+# Base image for Rust development
+FROM rust:1.74 AS rust_dev
+WORKDIR /usr/src/app
+
+# Install protobuf compiler for Rust worker
+RUN apt-get update && apt-get install -y \
+    protobuf-compiler \
+    && apt-get clean
+
+# Copy the full application code
+COPY . .
+
+# Build the Rust worker in debug mode (faster builds for development)
+WORKDIR /usr/src/app/example_workers/fast_response_rust_worker
+RUN cargo build
+
+# Base image for Elixir and Phoenix development
+FROM elixir:1.17.3 AS phoenix_dev
+WORKDIR /app
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Node.js and build tools
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    npm \
+    && apt-get clean
+
+# Install Hex and Rebar for Elixir
+RUN mix local.hex --force
+RUN mix local.rebar --force
+
+# Copy the full application code
+COPY . .
+
+# Install dependencies for Phoenix and assets
+RUN mix deps.get
+RUN npm --prefix ./assets install
+
+# Install Node.js dependencies for assets
+RUN npm --prefix ./assets run deploy
+
+# Runtime stage combining Rust and Phoenix
+FROM elixir:1.17.3 AS runtime_dev
+WORKDIR /app
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install necessary runtime libraries
+RUN apt-get update && apt-get install -y \
+    libssl-dev \
+    libc6 \
+    protobuf-compiler \
+    curl \
+    gnupg \
+    postgresql-client \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean
+
+# Copy Rust worker binary (debug mode)
+COPY --from=rust_dev /usr/src/app/example_workers/fast_response_rust_worker/target/debug/fast_response_rust_worker /usr/local/bin/fast_response_rust_worker
+
+# Copy Phoenix app source code
+COPY . .
+
+# Ensure `mix` uses the installed Hex and Rebar
+RUN mix local.hex --force && mix local.rebar --force
+
+# Expose Phoenix server port
+EXPOSE 4000
+
+# Set environment variables
+ENV MIX_ENV=dev
+# ENV WORKER_ID=dev_worker
+# ENV WORKER_ADDRESS=127.0.0.1:50053
+# ENV QUEUE_ADDRESS=http://localhost:4000
+
+# Command to run Phoenix server and Rust worker concurrently
+
+#CMD ["sh", "-c", "mix ecto.create && mix ecto.migrate && mix phx.server & wait-for-it localhost:4000 -- fast_response_rust_worker --worker-id=$WORKER_ID --worker-address=$WORKER_ADDRESS --queue-address=$QUEUE_ADDRESS --queue-name=media_update"]

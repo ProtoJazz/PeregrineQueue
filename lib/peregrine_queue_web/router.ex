@@ -18,6 +18,7 @@ defmodule PeregrineQueueWeb.Router do
     pipe_through :api
 
     post "/enqueue", QueueController, :enqueue
+    get "/health", HealthController, :check
   end
 
   scope "/", PeregrineQueueWeb do

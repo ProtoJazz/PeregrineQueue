@@ -1,0 +1,25 @@
+FROM rust:1.74 AS rust_dev
+WORKDIR /usr/src/app
+
+RUN apt-get update && apt-get install -y \
+    protobuf-compiler \
+    && apt-get clean
+
+COPY . .
+
+WORKDIR /usr/src/app/example_workers/fast_response_rust_worker
+RUN cargo build
+
+
+FROM rust:1.74 AS runtime_dev
+WORKDIR /app
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    libssl-dev \
+    libc6 \
+    protobuf-compiler \
+    curl \
+    gnupg
+
+COPY --from=rust_dev /usr/src/app/example_workers/fast_response_rust_worker/target/debug/fast_response_rust_worker /usr/local/bin/fast_response_rust_worker

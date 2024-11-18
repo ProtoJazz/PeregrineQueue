@@ -2,14 +2,9 @@ import Config
 
 # Configure your database
 config :peregrine_queue, PeregrineQueue.Repo,
-  username: "postgres",
-  password: "example",
-  hostname: "localhost",
-  port: 5469,
-  database: "peregrine_queue_dev",
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  url: System.get_env("DATABASE_URL"),
+  pool_size: 10,
+  show_sensitive_data_on_connection_error: true
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
@@ -20,7 +15,7 @@ config :peregrine_queue, PeregrineQueue.Repo,
 config :peregrine_queue, PeregrineQueueWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  http: [ip: {127, 0, 0, 1}, port: 4000],
+  http: [ip: {0, 0, 0, 0}, port: 4000],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
@@ -68,6 +63,7 @@ config :peregrine_queue, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
+config :logger, level: :debug
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.

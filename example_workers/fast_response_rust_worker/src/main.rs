@@ -17,6 +17,9 @@ pub mod queue {
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Config {
+    /// Worker server address
+    #[arg(long, default_value = "0.0.0.0:50053")]
+    worker_server_address: String,
     /// Worker ID
     #[arg(long, default_value = "fast_running_rust_worker")]
     worker_id: String,
@@ -32,6 +35,7 @@ struct Config {
     /// Queue Name
     #[arg(long, default_value = "media_update")]
     queue_name: String,
+    
 }
 
 #[derive(Debug, Clone)]
@@ -132,7 +136,7 @@ async fn send_heartbeat(
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::parse();
     
-    let worker_address_for_server = config.worker_address.clone();
+    let worker_address_for_server = config.worker_server_address.clone();
     let worker_address_for_client = config.worker_address.clone();
     let queue_address = config.queue_address.clone();
     let service_config = ServiceConfig {
@@ -154,9 +158,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .await
             .unwrap();
     });
-
-    let mut client = QueueServiceClient::connect(queue_address).await?;
-
+    println!("Connecting to queue server {}", queue_address.clone());
+    let mut client = QueueServiceClient::connect(queue_address.clone()).await?;
+    println!("Connected to queue server");
+    println!("Registering worker with queue server");
+    println!("Worker ID: {}", config.worker_id);
+    println!("Worker Address: {}", worker_address_for_client);
+    println!("Queue Name: {}", config.queue_name);
+    println!("Queue Address: {}", queue_address);
     let request = tonic::Request::new(RegisterWorkerRequest {
         queue_name: config.queue_name.to_string(),
         worker_id: config.worker_id.to_string(),

@@ -1,17 +1,42 @@
-# Use postgres/example user/password credentials
-version: "3.1"
+version: "3.8"
 
 services:
-  db:
-    image: postgres
-    restart: always
+  postgres:
+    image: postgres:15
     environment:
-      POSTGRES_PASSWORD: example
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     ports:
-      - 5469:5432
+      - "5420:5432"
 
-  adminer:
-    image: adminer
-    restart: always
+  phoenix:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      MIX_ENV: prod
+    depends_on:
+      - postgres
     ports:
-      - 8080:8080
+      - "4000:4000"
+
+  rust_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      fast_response_rust_worker
+      --worker-id=default_worker
+      --worker-address=127.0.0.1:50053
+      --queue-address=http://phoenix:4000
+      --queue-name=media_update
+    depends_on:
+      - phoenix
+
+volumes:
+  postgres_data:

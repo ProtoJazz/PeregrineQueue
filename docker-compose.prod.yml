@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  postgres:
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secure_password
+      POSTGRES_DB: peregrine_queue
+
+  phoenix:
+    environment:
+      DATABASE_URL: "ecto://postgres:secure_password@postgres:5432/peregrine_queue"
+      SECRET_KEY_BASE: "prod_secret_key" # Use a secure secret
+      MIX_ENV: prod
+    ports:
+      - "4000:4000"
+    command: >
+      sh -c "mix ecto.migrate && bin/your_app_name start"
+
+  rust_worker:
+    environment:
+      WORKER_ID: "prod_worker"
+      QUEUE_ADDRESS: "http://phoenix:4000"
+    command: >
+      fast_response_rust_worker
+      --worker-id=$WORKER_ID
+      --worker-address=127.0.0.1:50053
+      --queue-address=$QUEUE_ADDRESS
+      --queue-name=media_update
