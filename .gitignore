@@ -38,3 +38,6 @@ npm-debug.log
 example_workers/*/target
 .env
 .envrc
+
+.env.prod
+rel

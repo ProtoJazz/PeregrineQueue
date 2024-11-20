@@ -59,7 +59,7 @@ services:
       - WORKER_ADDRESS=rust_worker:50053
       - QUEUE_ADDRESS=http://phoenix:50051
     ports:
-      - "50053:50053"
+      - "50055:50055"
     volumes:
       - ./example_workers/fast_response_rust_worker:/usr/src/app/example_workers/fast_response_rust_worker
     depends_on:
@@ -67,7 +67,7 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-        /usr/local/bin/fast_response_rust_worker --worker-server-address=0.0.0.0:50053 --worker-id=fast_running-rust_worker --worker-address=rust_worker:50053 --queue-address=$QUEUE_ADDRESS --queue-name=media_update
+        /usr/local/bin/fast_response_rust_worker --worker-server-address=0.0.0.0:50055 --worker-id=fast_running-rust_worker --worker-address=rust_worker:50055 --queue-address=$QUEUE_ADDRESS --queue-name=media_update
       "
 
 

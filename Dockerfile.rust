@@ -14,5 +14,3 @@ WORKDIR /usr/src/app/example_workers/fast_response_rust_worker
 RUN cargo build
 
 RUN cp target/debug/fast_response_rust_worker /usr/local/bin/
-
-EXPOSE 50053
