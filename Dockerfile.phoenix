@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     npm \
+    inotify-tools \
     && apt-get clean
 
 RUN mix local.hex --force && mix local.rebar --force

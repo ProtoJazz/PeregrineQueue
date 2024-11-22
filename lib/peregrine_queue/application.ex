@@ -16,7 +16,7 @@ defmodule PeregrineQueue.Application do
       # Start the Ecto repository
       PeregrineQueue.Repo,
       {GRPC.Server.Supervisor,
-       endpoint: PeregrineQueueWeb.GRPCEndpoint, port: 50051, start_server: true},
+       endpoint: PeregrineQueueWeb.GRPCEndpoint, port: 50051, start_server: true,  ip: {0,0,0,0,0,0,0,0}},
       {PeregrineQueue.WorkerRegistry, []},
       {PeregrineQueue.JobRateLimiter, []},
       # Start the PubSub system

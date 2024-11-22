@@ -15,6 +15,10 @@ config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: PeregrineQueue.F
 # Do not print debug messages in production
 config :logger, level: :info
 
+config :peregrine_queue, PeregrineQueueWeb.GRPCEndpoint,
+  ip: {0, 0, 0, 0},  # Bind to all interfaces
+  port: 50051
+
 
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.

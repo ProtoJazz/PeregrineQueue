@@ -1,4 +1,4 @@
-FROM rust:1.74
+FROM rust:1.75
 
 WORKDIR /usr/src/app
 
@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 COPY . .
 
 WORKDIR /usr/src/app/example_workers/fast_response_rust_worker
-
+RUN cargo install cargo-watch
 RUN cargo build
 
 RUN cp target/debug/fast_response_rust_worker /usr/local/bin/

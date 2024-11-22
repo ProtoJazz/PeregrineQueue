@@ -56,18 +56,15 @@ services:
       dockerfile: Dockerfile.rust
     environment:
       - WORKER_ID=fast_running_rust_worker
-      - WORKER_ADDRESS=rust_worker:50053
+      - WORKER_ADDRESS=rust_worker:50055
       - QUEUE_ADDRESS=http://phoenix:50051
     ports:
       - "50055:50055"
     volumes:
       - ./example_workers/fast_response_rust_worker:/usr/src/app/example_workers/fast_response_rust_worker
-    depends_on:
-      phoenix:
-        condition: service_healthy
     command: >
       sh -c "
-        /usr/local/bin/fast_response_rust_worker --worker-server-address=0.0.0.0:50055 --worker-id=fast_running-rust_worker --worker-address=rust_worker:50055 --queue-address=$QUEUE_ADDRESS --queue-name=media_update
+        cargo watch -x 'run -- --worker-server-address=0.0.0.0:50055 --worker-id=fast_running-rust_worker --worker-address=rust_worker:50055 --queue-address=$QUEUE_ADDRESS --queue-name=media_update'
       "
 
 
@@ -83,13 +80,10 @@ services:
       - "50054:50054"
     volumes:
       - ./example_workers/fast_response_rust_worker:/usr/src/app/example_workers/fast_response_rust_worker
-    depends_on:
-      phoenix:
-        condition: service_healthy
     command: >
       sh -c "
-        /usr/local/bin/fast_response_rust_worker --worker-server-address=0.0.0.0:50054 --worker-id=fast_running-rust_worker_2 --worker-address=rust_worker_2:50054 --queue-address=$QUEUE_ADDRESS --queue-name=image_processing
-      "
+       cargo watch -x 'run -- --worker-server-address=0.0.0.0:50054 --worker-id=fast_running-rust_worker_2 --worker-address=rust_worker_2:50054 --queue-address=$QUEUE_ADDRESS --queue-name=image_processing'
+      "     
 
 volumes:
   postgres_data:

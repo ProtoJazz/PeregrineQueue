@@ -40,7 +40,13 @@ window.addEventListener("phx:page-loading-stop", () => {
     document.body.classList.add("loaded");
 });
 Hooks = {}
-
+Hooks.Toast = {
+    mounted() {
+      setTimeout(() => {
+        this.pushEventTo("#global-event-handler", "remove_notification", { id: this.el.dataset.id })
+      }, 5000) 
+    },
+  }
 Hooks.Datepicker = {
     mounted() {
         const datepickerEl = this.el;
