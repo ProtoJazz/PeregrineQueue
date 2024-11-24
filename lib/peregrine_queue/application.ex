@@ -28,7 +28,6 @@ defmodule PeregrineQueue.Application do
       PeregrineQueueWeb.Endpoint,
       GrpcReflection,
       {Oban, Application.fetch_env!(:peregrine_queue, Oban)},
-      PeregrineQueue.StartupTask
       # Start a worker by calling: PeregrineQueue.Worker.start_link(arg)
       # {PeregrineQueue.Worker, arg}
     ]
