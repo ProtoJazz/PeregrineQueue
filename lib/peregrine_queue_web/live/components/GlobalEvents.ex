@@ -1,6 +1,8 @@
 defmodule PeregrineQueueWeb.Components.GlobalEvents do
   use PeregrineQueueWeb, :live_component
   alias PeregrineQueue.EnqueueService
+  alias PeregrineQueue.JobData
+  alias PeregrineQueue.JobDataService
 
   def mount(socket) do
     if connected?(socket) do
@@ -27,6 +29,18 @@ defmodule PeregrineQueueWeb.Components.GlobalEvents do
       Enum.reject(socket.assigns.global_notifications, fn n -> n.id == String.to_integer(id) end)
 
     {:noreply, assign(socket, global_notifications: notifications)}
+  end
+
+  def handle_event("retry_job", %{"id" => id}, socket) do
+    IO.inspect("Retrying job with id #{id}")
+
+    job_id = String.to_integer(id)
+    job_data = JobDataService.get_job_data_with_oban_job(job_id)
+
+    JobDataService.retry_job_data(job_data)
+
+
+    {:noreply, socket}
   end
 
 

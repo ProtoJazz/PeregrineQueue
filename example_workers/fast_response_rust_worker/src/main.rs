@@ -14,6 +14,7 @@ use std::net::ToSocketAddrs;
 use tonic::transport::Uri;
 use tracing::info;
 use tonic_reflection::server::Builder;
+use rand::Rng;
 pub mod queue {
     tonic::include_proto!("queue");
 }
@@ -33,6 +34,9 @@ struct Config {
     /// Queue Name
     #[arg(long)]
     queue_name: String,
+    /// Demo mode (optional, defaults to false)
+    #[arg(long, default_value_t = false)]
+    demo_mode: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -40,6 +44,7 @@ struct ServiceConfig {
     worker_id: String,
     worker_address: String,
     queue_name: String,
+    demo_mode: bool,
 }
 
 #[derive(Debug)]
@@ -150,10 +155,24 @@ impl QueueService for MyQueueService {
         println!("Queue Name: {}", req.queue_name);
         println!("Data: {}", req.data);
         println!("Full request struct: {:?}", req);
+        
+        
+        let mut status = "complete".to_string(); // Default status
+
+        if self.config.demo_mode {
+            println!("Demo mode enabled, sleeping for 5 seconds before responding...");
+            sleep(Duration::from_secs(5)).await;
     
-        // Return a dummy response
+            // Generate a random 50/50 chance only in demo mode
+            let mut rng = rand::thread_rng();
+            if rng.gen_bool(0.5) {
+                status = "failed".to_string();
+            }
+        }
+    
+
         let reply = DispatchWorkResponse {
-            status: "complete".to_string(),
+            status: status,
             worker_id: self.config.worker_id.to_string(),
             worker_address: self.config.worker_address.to_string(),
         };
@@ -247,13 +266,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
     let config = Config::parse();
 
-    // Extract port for binding
     let port = config.worker_address.split(':').last().unwrap_or("50053");
     
-    // Bind address for server
     let bind_addr = format!("[::]:{}", port);
 
-    // Get internal IPv6 address
     let ipv6_address = match get_internal_ipv6().await {
         Some(ip) => {
             println!("Using Fly.io private IP: {}", ip);
@@ -265,17 +281,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
     
-    println!("Final worker address being used: {}", ipv6_address);
 
-    println!("Using IPv6 address: {}", ipv6_address);
 
     let service_config = ServiceConfig {
         worker_id: config.worker_id.clone(),
         worker_address: ipv6_address.clone(),
         queue_name: config.queue_name.clone(),
+        demo_mode: config.demo_mode
     };
 
-    // Create a channel for server startup notification
     let (tx, rx) = tokio::sync::oneshot::channel();
 
     // Spawn the server task

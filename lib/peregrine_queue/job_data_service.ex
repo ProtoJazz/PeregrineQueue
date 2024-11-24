@@ -2,6 +2,7 @@ defmodule PeregrineQueue.JobDataService do
   import Ecto.Query
   alias PeregrineQueue.JobData
   alias PeregrineQueue.Repo
+  alias Oban.Job
   # use Scrivener, page_size: 10
 
   def get_job_data_by_oban_id(oban_job_id) do
@@ -10,6 +11,36 @@ defmodule PeregrineQueue.JobDataService do
 
   def get_job_data_by_job_data_id(job_data_id) do
     Repo.one(from(j in JobData, where: j.id == ^job_data_id))
+  end
+
+  def get_job_data_with_oban_job(job_data_id) do
+    Repo.one(from(j in JobData, where: j.id == ^job_data_id, preload: :oban_job))
+  end
+
+  def retry_oban_job(oban_job) do
+          oban_job
+          |> Ecto.Changeset.change(%{
+            state: "retryable",
+            attempt: oban_job.attempt - 1,
+            scheduled_at: DateTime.utc_now(),
+            errors: []
+          })
+          |> Repo.update!()
+  end
+
+  def retry_job_data(job_data) do
+    Repo.transaction(fn ->
+      if(job_data.oban_job != nil) do
+          retry_oban_job(job_data.oban_job)
+      end
+      job_data =
+        update_job_data(job_data, %{
+          status: :pending,
+          worker_id: nil,
+          worker_address: nil
+        })
+      {:ok, job_data}
+    end)
   end
 
   def get_next_job_data(queue) do
@@ -40,6 +71,7 @@ defmodule PeregrineQueue.JobDataService do
     |> Repo.update()
   end
 
+  @spec get_jobs_for_time_range(any(), any()) :: any()
   def get_jobs_for_time_range(start_time, end_time) do
     Repo.all(
       from(j in JobData, where: j.inserted_at >= ^start_time, where: j.inserted_at <= ^end_time, preload: :oban_job)

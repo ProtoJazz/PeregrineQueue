@@ -367,6 +367,7 @@ dependencies = [
  "env_logger",
  "log",
  "prost",
+ "rand",
  "regex",
  "tokio",
  "tonic",
