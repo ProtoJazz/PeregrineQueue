@@ -4,6 +4,7 @@ defmodule PeregrineQueue.Application do
   @moduledoc false
 
   use Application
+  alias PeregrineQueue.Workers.DemoCleanup
 
   @impl true
   def start(_type, _args) do
@@ -26,7 +27,8 @@ defmodule PeregrineQueue.Application do
       # Start the Endpoint (http/https)
       PeregrineQueueWeb.Endpoint,
       GrpcReflection,
-      {Oban, Application.fetch_env!(:peregrine_queue, Oban)}
+      {Oban, Application.fetch_env!(:peregrine_queue, Oban)},
+      PeregrineQueue.StartupTask
       # Start a worker by calling: PeregrineQueue.Worker.start_link(arg)
       # {PeregrineQueue.Worker, arg}
     ]
@@ -54,7 +56,8 @@ defmodule PeregrineQueue.Application do
         {:ok, config} -> get_oban_queues_from_env(config)
         {:error, _} -> {[], []}
       end
-
+    fixed_queues = [{:system, 5}]
+    oban_config = oban_config ++ fixed_queues
     Application.put_env(:peregrine_queue, Oban, repo: PeregrineQueue.Repo, queues: oban_config)
     Application.put_env(:peregrine_queue, PeregrineQueue, push_queues: push_queues, pull_queues: pull_queues)
   end

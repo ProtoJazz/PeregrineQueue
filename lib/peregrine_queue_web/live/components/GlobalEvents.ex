@@ -29,6 +29,7 @@ defmodule PeregrineQueueWeb.Components.GlobalEvents do
     {:noreply, assign(socket, global_notifications: notifications)}
   end
 
+
   def render(assigns) do
     ~H"""
     <span id="global-event-handler">

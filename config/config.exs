@@ -64,7 +64,18 @@ config :flop, repo: PeregrineQueue.Repo
 config :peregrine_queue, Oban,
   engine: Oban.Engines.Basic,
   queues: :runtime_config,
-  repo: PeregrineQueue.Repo
+  repo: PeregrineQueue.Repo,
+  plugins: [
+    {Oban.Plugins.Cron,
+     crontab: if System.get_env("DISPLAY_DEMO") == "true" do
+       [
+         {"@daily", PeregrineQueue.Workers.DemoCleanup, queue: :system}
+       ]
+     else
+       []
+     end}
+  ]
+
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
