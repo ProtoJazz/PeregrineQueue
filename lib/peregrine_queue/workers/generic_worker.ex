@@ -43,11 +43,6 @@ defmodule PeregrineQueue.Workers.GenericWorker do
           IO.puts("Worker address before connect: #{inspect(w.worker_address)}")
         end)
 
-        # Get the IPv6 address for debugging
-        case :inet.getaddr('peregrinequeue.internal', :inet6) do
-          {:ok, addr} -> IO.puts("Resolved IPv6: #{inspect(addr)}")
-          {:error, err} -> IO.puts("Failed to resolve: #{inspect(err)}")
-        end
         job_data = JobDataService.get_job_data_by_job_data_id(job_id)
 
         dispatched_worker = Enum.reduce_while(workers, nil, fn worker, acc ->

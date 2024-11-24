@@ -16,8 +16,8 @@ defmodule PeregrineQueueWeb.Components.GlobalEvents do
 
 
     EnqueueService.enqueue_job("media_update", "/var/bean/movies")
-    EnqueueService.enqueue_job("data_sync", "/var/bean/movies")
-    EnqueueService.enqueue_job("web_scrapping", "/var/bean/movies")
+   # EnqueueService.enqueue_job("data_sync", "/var/bean/movies")
+   # EnqueueService.enqueue_job("web_scrapping", "/var/bean/movies")
     Phoenix.PubSub.broadcast(PeregrineQueue.PubSub, "demo_events", %{type: :spawn_demo_event})
 
     {:noreply, assign(socket, global_notifications: [notification | socket.assigns.global_notifications])}

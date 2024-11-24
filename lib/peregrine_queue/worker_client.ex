@@ -3,33 +3,25 @@ defmodule PeregrineQueue.WorkerClient do
   alias Queue.{DispatchWorkRequest, DispatchWorkResponse}
   require Logger
 
+  @timeout 15_000
 
   def start_link(address) do
-    # First resolve the IPv6 address
-    case :inet.getaddr(to_charlist(String.split(address, ":") |> hd()), :inet6) do
-      {:ok, ipv6_addr} ->
-        ip_string = :inet.ntoa(ipv6_addr) |> to_string()
-        port = String.split(address, ":") |> List.last() |> String.to_integer()
+    Logger.info("Initiating connection to: #{address}")
 
-        Logger.info("Using resolved IPv6: [#{ip_string}]:#{port}")
-        GRPC.Stub.connect(ip_string, port, [
-          timeout: 5000,
-          connect_timeout: 5000
-        ])
-      {:error, _} ->
-        # Fallback to direct connection if IPv6 resolution fails
-        case String.split(address, ":") do
-          [host, port] ->
-            Logger.info("Falling back to direct connection: #{host}:#{port}")
-            GRPC.Stub.connect(host, String.to_integer(port), [
-              timeout: 5000,
-              connect_timeout: 5000
-            ])
-          _ ->
-            Logger.error("Invalid address format: #{address}")
-            {:error, :invalid_address}
-        end
-    end
+    connection_opts = [
+      timeout: @timeout,
+      connect_timeout: @timeout,
+      adapter: GRPC.Client.Adapters.Mint,
+      adapter_opts: [
+        transport_opts: [
+          mode: :active,
+          inet6: true
+        ]
+      ]
+    ]
+
+    Logger.info("Connecting to #{address} with options: #{inspect(connection_opts)}")
+    GRPC.Stub.connect(address, connection_opts)
   end
 
   def dispatch_work(channel, data, queue_name, job_id) do
@@ -39,14 +31,25 @@ defmodule PeregrineQueue.WorkerClient do
       data: data
     }
 
-    case Stub.dispatch_work(channel, request) do
-      {:ok, %DispatchWorkResponse{status: status}} ->
-        Logger.info("Dispatch Work Response: #{status}")
-        {:ok, status}
+    Logger.info("Preparing to dispatch work: #{inspect(request)}")
 
-      {:error, reason} ->
-        Logger.error("Failed to dispatch work: #{inspect(reason)}")
-        {:error, reason}
+    try do
+      case Stub.dispatch_work(channel, request, timeout: @timeout) do
+        {:ok, %DispatchWorkResponse{} = response} ->
+          Logger.info("Successful dispatch response: #{inspect(response)}")
+          {:ok, response.status}
+
+        {:error, reason} = error ->
+          Logger.error("Dispatch error: #{inspect(reason)}")
+          error
+      end
+    rescue
+      e ->
+        Logger.error("Exception during dispatch: #{Exception.message(e)}")
+        Logger.error("#{Exception.format_stacktrace(__STACKTRACE__)}")
+        {:error, :dispatch_failed}
+    after
+      GRPC.Stub.disconnect(channel)
     end
   end
 end

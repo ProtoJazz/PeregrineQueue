@@ -15,12 +15,25 @@ GRPC_SERVER_HOST = '0.0.0.0'
 GRPC_SERVER_PORT = '50051'
 RUST_LOG = "debug"
 FLY_ENABLE_PRIVATE_NETWORK = "true"
+
+[processes]
+app = "/app/bin/peregrine_queue start"
+worker = """\
+  /usr/local/bin/fast_response_rust_worker \
+  --worker-id=fast_running_rust_worker \
+  --worker-address=worker.process.peregrinequeue.internal:50053 \
+  --queue-address=app.process.peregrinequeue.internal:50051 \
+  --queue-name=media_update\
+  """
+
+# Phoenix web service
 [http_service]
 internal_port = 8080
 force_https = true
 auto_stop_machines = 'stop'
 auto_start_machines = true
 min_machines_running = 1
+max_machines_running = 1
 processes = ['app']
 
 [http_service.concurrency]
@@ -28,37 +41,28 @@ type = 'connections'
 hard_limit = 1000
 soft_limit = 1000
 
+# Queue gRPC Service
 [[services]]
-protocol = "tcp"
 internal_port = 50051
-processes = ["app", "worker"] 
+protocol = "tcp"
+processes = ["app"]
+internal_name = "queue-grpc"
 
 [[services.ports]]
 port = 50051
-handlers = []
 
-[services.concurrency]
-type = "connections"
-hard_limit = 1000
-soft_limit = 1000
-
+# Worker gRPC Service
 [[services]]
-protocol = "tcp"
 internal_port = 50053
-processes = ["app", "worker"] 
-internal_name = "peregrinequeue-worker"
+protocol = "tcp"
+processes = ["worker"]
+internal_name = "worker-grpc"
 
 [[services.ports]]
 port = 50053
-handlers = []
-
-
-
-[processes]
-app = "/app/bin/peregrine_queue start"
-worker = "/usr/local/bin/fast_response_rust_worker --worker-id=fast_running_rust_worker --worker-address=peregrinequeue-worker.internal:50053 --queue-address=peregrinequeue.internal:50051 --queue-name=media_update"
 
 [[vm]]
 memory = '1gb'
 cpu_kind = 'shared'
 cpus = 1
+count = 1

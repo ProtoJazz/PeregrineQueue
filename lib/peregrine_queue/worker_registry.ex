@@ -28,10 +28,10 @@ defmodule PeregrineQueue.WorkerRegistry do
 
   defp schedule_worker_removal() do
     Logger.info("Scheduling worker removal")
-    :timer.send_interval(60 * 1000, :begin_purge)
+    :timer.send_interval(60 * 10000, :begin_purge)
   end
 
-  def remove_stale_workers(timeout \\ 5 * 60_000) do
+  def remove_stale_workers(timeout \\ 5 * 600_000) do
     current_time = System.monotonic_time(:millisecond)
 
     :ets.tab2list(@worker_registry)

@@ -8,7 +8,6 @@ defmodule PeregrineQueue.EnqueueService do
     push_queues = Keyword.get(config, :push_queues, [])
     pull_job = Enum.find(pull_queues, fn queue -> queue.name == queue_name end)
     push_job = Enum.find(push_queues, fn queue -> queue.name == queue_name end)
-    test_grpc_connection()
 
     case {pull_job, push_job} do
       {nil, nil} ->
@@ -19,40 +18,6 @@ defmodule PeregrineQueue.EnqueueService do
 
       {_, nil} ->
         enqueue_pull_job(queue_name, data)
-    end
-  end
-
-  def test_grpc_connection do
-    IO.puts("Testing gRPC connection...")
-
-    case GRPC.Stub.connect("127.0.0.1:50051", []) do
-      {:ok, channel} ->
-        IO.puts("Connected to gRPC server")
-
-        request = %GetWorkersForQueueRequest{queue_name: "media_update"}
-
-        try do
-          case QueueService.Stub.get_workers_for_queue(channel, request) do
-            {:ok, response} ->
-              IO.puts("Got successful response!")
-              IO.puts("Response: #{inspect(response)}")
-              :ok
-
-            {:error, error} ->
-              IO.puts("Got error response: #{inspect(error)}")
-              :error
-          end
-        rescue
-          e ->
-            IO.puts("Failed to make request: #{inspect(e)}")
-            :error
-        after
-          GRPC.Stub.disconnect(channel)
-        end
-
-      {:error, reason} ->
-        IO.puts("Failed to connect: #{inspect(reason)}")
-        :error
     end
   end
 

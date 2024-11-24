@@ -12,10 +12,12 @@ use tokio::time::Duration;
 use tonic::{transport::Channel, transport::Server, Request, Response, Status};
 use std::net::ToSocketAddrs;
 use tonic::transport::Uri;
-
+use tracing::info;
+use tonic_reflection::server::Builder;
 pub mod queue {
     tonic::include_proto!("queue");
 }
+
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Config {
@@ -64,9 +66,21 @@ async fn send_heartbeat(
         println!("Heartbeat Response: {:?}", response.get_ref());
 
         // Wait for 30 seconds before the next heartbeat
-        sleep(Duration::from_secs(30)).await;
+        sleep(Duration::from_secs(360)).await;
     }
 }
+
+async fn get_internal_ipv6() -> Option<String> {
+    // Get the IP directly from Fly.io environment variable
+    if let Ok(ip) = std::env::var("FLY_PRIVATE_IP") {
+        println!("Found Fly.io private IP: {}", ip);
+        return Some(ip);
+    }
+    
+    println!("FLY_PRIVATE_IP not found in environment");
+    None
+}
+
 
 async fn get_ipv6_address(hostname: &str) -> Option<String> {
     if let Ok(addrs) = hostname.to_socket_addrs() {
@@ -78,6 +92,7 @@ async fn get_ipv6_address(hostname: &str) -> Option<String> {
     }
     None
 }
+
 #[tonic::async_trait]
 impl QueueService for MyQueueService {
     async fn register_worker(
@@ -123,20 +138,32 @@ impl QueueService for MyQueueService {
         &self,
         request: Request<DispatchWorkRequest>,
     ) -> Result<Response<DispatchWorkResponse>, Status> {
-        println!("Received dispatch_work request from: {:?}", request.remote_addr());
+        println!("\n=== DISPATCH WORK REQUEST RECEIVED ===");
+        println!("Remote address: {:?}", request.remote_addr());
+        println!("Request extensions: {:?}", request.extensions());
+        println!("Raw request: {:?}", request);
+        println!("Full metadata: {:?}", request.metadata());
+        
         let req = request.into_inner();
-        println!("Received dispatch_work request for job_id: {}", req.job_id);
-
+        println!("\n=== REQUEST DETAILS ===");
+        println!("Job ID: {}", req.job_id);
+        println!("Queue Name: {}", req.queue_name);
+        println!("Data: {}", req.data);
+        println!("Full request struct: {:?}", req);
+    
         // Return a dummy response
         let reply = DispatchWorkResponse {
             status: "complete".to_string(),
             worker_id: self.config.worker_id.to_string(),
             worker_address: self.config.worker_address.to_string(),
         };
-
+    
+        println!("\n=== SENDING RESPONSE ===");
+        println!("Response details: {:?}", reply);
         Ok(Response::new(reply))
     }
 }
+
 async fn connect_to_queue_server(queue_address: String) -> Result<QueueServiceClient<Channel>, Box<dyn std::error::Error>> {
     loop {
         let endpoint_uri = if queue_address.contains("://") {
@@ -174,38 +201,130 @@ async fn connect_to_queue_server(queue_address: String) -> Result<QueueServiceCl
     }
 }
 
+async fn test_local_server(address: String) -> Result<(), Box<dyn std::error::Error>> {
+    println!("\n=== Testing local server ===");
+    println!("Attempting to connect to: {}", address);
+    
+    let uri = format!("http://{}", address).parse()?;
+    
+    match Channel::builder(uri)
+        .connect_timeout(Duration::from_secs(5))
+        .tcp_nodelay(true)
+        .connect()
+        .await 
+    {
+        Ok(channel) => {
+            println!("Successfully connected to local server");
+            let mut client = QueueServiceClient::new(channel);
+            
+            let request = tonic::Request::new(DispatchWorkRequest {
+                job_id: 12345,  // Changed to i32
+                queue_name: "test-queue".to_string(),
+                data: "test data".to_string(),
+            });
+            
+            println!("Sending test dispatch request...");
+            match client.dispatch_work(request).await {
+                Ok(response) => {
+                    println!("Got response: {:?}", response.get_ref());
+                    Ok(())
+                }
+                Err(e) => {
+                    println!("Dispatch failed: {:?}", e);
+                    Err(Box::new(e))
+                }
+            }
+        }
+        Err(e) => {
+            println!("Connection failed: {:?}", e);
+            Err(Box::new(e))
+        }
+    }
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    tracing_subscriber::fmt::init();
     let config = Config::parse();
 
-    // Extract the port for binding
+    // Extract port for binding
     let port = config.worker_address.split(':').last().unwrap_or("50053");
-    let bind_addr = format!("peregrinequeue-worker.internal:{}", port);
+    
+    // Bind address for server
+    let bind_addr = format!("[::]:{}", port);
 
-    // Use the original internal DNS name for registration
-    let registration_address = config.worker_address.clone();
+    // Get internal IPv6 address
+    let ipv6_address = match get_internal_ipv6().await {
+        Some(ip) => {
+            println!("Using Fly.io private IP: {}", ip);
+            format!("[{}]:{}", ip, port)
+        },
+        None => {
+            println!("Warning: Could not find Fly.io private IP, falling back to provided address");
+            config.worker_address.clone()
+        }
+    };
+    
+    println!("Final worker address being used: {}", ipv6_address);
+
+    println!("Using IPv6 address: {}", ipv6_address);
 
     let service_config = ServiceConfig {
         worker_id: config.worker_id.clone(),
-        worker_address: registration_address.clone(),
+        worker_address: ipv6_address.clone(),
         queue_name: config.queue_name.clone(),
     };
 
+    // Create a channel for server startup notification
+    let (tx, rx) = tokio::sync::oneshot::channel();
+
     // Spawn the server task
     let server_config = service_config.clone();
+    let bind_addr_clone = bind_addr.clone();
     tokio::spawn(async move {
         let queue_service = MyQueueService::new(server_config);
         
-        let addr = bind_addr.parse().unwrap();
+        let addr = bind_addr_clone.parse().unwrap();
+        println!("=== SERVER STARTUP ===");
         println!("QueueService server listening on {}", addr);
+        println!("Server configuration: {:?}", queue_service);
         
-        Server::builder()
-            .add_service(QueueServiceServer::new(queue_service))
-            .serve(addr)
-            .await
-            .unwrap();
+        // Signal that we're about to start the server
+        tx.send(()).unwrap();
+
+        println!("Starting server with enhanced logging...");
+
+        let reflection_service = Builder::configure()
+        .register_encoded_file_descriptor_set(include_bytes!("../proto_descriptor.bin"))
+        .build()
+        .unwrap();
+        
+        match Server::builder()
+                .trace_fn(|_| tracing::info_span!("tonic_server"))
+                // Remove accept_http1 since gRPC requires HTTP/2
+                .tcp_keepalive(Some(Duration::from_secs(60)))
+                .tcp_nodelay(true)
+                .max_concurrent_streams(Some(100))  // Match client settings
+                .max_frame_size(Some(16384))       // Match client settings
+                .initial_connection_window_size(65535) // Match client settings
+                .initial_stream_window_size(65535)    // Match client settings
+                .add_service(QueueServiceServer::new(queue_service))
+                .add_service(reflection_service)
+                .serve(addr)
+            .await 
+        {
+            Ok(_) => println!("Server shutdown normally"),
+            Err(e) => println!("Server error: {:?}", e),
+        }
     });
+
+    // Wait for server to start
+    rx.await?;
+    println!("Server process started");
+    
+    // Additional delay to ensure server is fully ready
+    println!("Waiting for server to be fully ready...");
+    tokio::time::sleep(Duration::from_secs(2)).await;
 
     println!("Connecting to queue server {}", config.queue_address);
     let mut client = connect_to_queue_server(config.queue_address.clone()).await?;
@@ -213,20 +332,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Registering worker with queue server");
     println!("Worker ID: {}", config.worker_id);
-    println!("Worker Address: {}", registration_address);
+    println!("Worker Address: {}", ipv6_address);
     println!("Queue Name: {}", config.queue_name);
     
     let request = tonic::Request::new(RegisterWorkerRequest {
         queue_name: config.queue_name,
         worker_id: config.worker_id.clone(),
-        worker_address: registration_address,
+        worker_address: config.worker_address.clone(),
     });
 
     let response = client.register_worker(request).await?;
     println!("Register Worker Response: {:?}", response.get_ref());
+   
+    println!("Testing local server...");
+    if let Err(e) = test_local_server(ipv6_address.clone()).await {
+        println!("Local server test failed: {:?}", e);
+    } else {
+        println!("Local server test passed!");
+    }
 
     // Start heartbeat
     send_heartbeat(&mut client, config.worker_id).await?;
-
+    
     Ok(())
 }
