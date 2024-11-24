@@ -24,6 +24,7 @@ worker = """\
   --worker-address=worker.process.peregrinequeue.internal:50053 \
   --queue-address=app.process.peregrinequeue.internal:50051 \
   --queue-name=media_update\
+  --demo-mode=true\
   """
 
 # Phoenix web service
