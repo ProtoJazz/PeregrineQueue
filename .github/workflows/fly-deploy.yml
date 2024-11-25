@@ -28,14 +28,6 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-      - name: Check Deployment Logs
-        if: failure()
-        run: |
-          echo "Fetching recent logs..."
-          flyctl logs
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
       # Optional: Add this step if you want to try running migrations separately
       - name: Run Migrations Separately
         if: failure()
