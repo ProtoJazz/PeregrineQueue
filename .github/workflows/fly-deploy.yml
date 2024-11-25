@@ -24,9 +24,11 @@ jobs:
       - name: Verify Database Attachment
         run: |
           echo "Checking database attachment..."
-          fly postgres attach peregrinequeue-db
+          flyctl postgres attach peregrinequeue-db || echo "Database already attached"
+          flyctl config show
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
       - name: Deploy to Fly.io
         run: |
           echo "Starting deployment..."
