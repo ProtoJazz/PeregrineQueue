@@ -20,13 +20,13 @@ jobs:
           flyctl status
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          
+
       - name: Verify Database Attachment
-          run: |
-            echo "Checking database attachment..."
-            fly postgres attach peregrinequeue-db
-          env:
-            FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          echo "Checking database attachment..."
+          fly postgres attach peregrinequeue-db
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       - name: Deploy to Fly.io
         run: |
           echo "Starting deployment..."
