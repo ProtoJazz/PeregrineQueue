@@ -16,6 +16,10 @@ defmodule PeregrineQueue.WorkerRegistry do
     GenServer.call(__MODULE__, {:get_workers_for_queue, queue})
   end
 
+  def is_worker_registered(worker_id) do
+    GenServer.call(__MODULE__, {:is_worker_registered, worker_id})
+  end
+
   def register_heartbeat(worker_id) do
     GenServer.cast(__MODULE__, {:register_heartbeat, worker_id})
   end
@@ -62,6 +66,16 @@ defmodule PeregrineQueue.WorkerRegistry do
 
   def handle_call({:get_workers_for_queue, queue}, _from, state) do
     workers = :ets.lookup(@worker_registry, queue) |> Enum.map(fn {_queue, info} -> info end)
+    {:reply, workers, state}
+  end
+
+  def handle_call({:is_worker_registered, worker_id}, _from, state) do
+    workers = :ets.tab2list(@worker_registry)
+    |> Enum.any?(fn
+      {_, %{worker_id: ^worker_id}} -> true
+      _ -> false
+    end)
+
     {:reply, workers, state}
   end
 

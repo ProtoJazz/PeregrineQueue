@@ -6,7 +6,7 @@ defmodule PeregrineQueueWeb.Components.GlobalEvents do
 
   def mount(socket) do
     if connected?(socket) do
-      Phoenix.PubSub.subscribe(PeregrineQueue.PubSub, "demo_events")
+      Phoenix.PubSub.subscribe(PeregrineQueue.PubSub, "job_events")
     end
 
     {:ok, assign(socket, global_notifications: [])}
@@ -20,7 +20,7 @@ defmodule PeregrineQueueWeb.Components.GlobalEvents do
     EnqueueService.enqueue_job("media_update", "/var/bean/movies")
    # EnqueueService.enqueue_job("data_sync", "/var/bean/movies")
    # EnqueueService.enqueue_job("web_scrapping", "/var/bean/movies")
-    Phoenix.PubSub.broadcast(PeregrineQueue.PubSub, "demo_events", %{type: :spawn_demo_event})
+    Phoenix.PubSub.broadcast(PeregrineQueue.PubSub, "job_events", %{type: :refresh_jobs})
 
     {:noreply, assign(socket, global_notifications: [notification | socket.assigns.global_notifications])}
   end
@@ -38,9 +38,10 @@ defmodule PeregrineQueueWeb.Components.GlobalEvents do
     job_data = JobDataService.get_job_data_with_oban_job(job_id)
 
     JobDataService.retry_job_data(job_data)
+    notification = %{id: :erlang.unique_integer([:positive]), message: "Retrying job: #{id}"}
+    Phoenix.PubSub.broadcast(PeregrineQueue.PubSub, "job_events", %{type: :refresh_jobs})
+    {:noreply, assign(socket, global_notifications: [notification | socket.assigns.global_notifications])}
 
-
-    {:noreply, socket}
   end
 
 

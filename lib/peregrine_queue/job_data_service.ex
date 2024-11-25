@@ -77,14 +77,23 @@ defmodule PeregrineQueue.JobDataService do
       from(j in JobData, where: j.inserted_at >= ^start_time, where: j.inserted_at <= ^end_time, preload: :oban_job)
     )
   end
-
   def get_paginated_jobs_for_time_range(%{start_time: start_time, end_time: end_time}, flop_params) do
-    query =
+    base_query =
       from j in JobData,
+        left_join: oj in assoc(j, :oban_job),
         where: j.inserted_at >= ^start_time and j.inserted_at <= ^end_time,
-        preload: :oban_job
+        preload: [oban_job: oj]
 
-    case Flop.validate_and_run(query, flop_params, for: PeregrineQueue.JobData) do
+    query = if flop_params["order_by"] == ["scheduled_at"] do
+      direction = (flop_params["order_directions"] || ["asc"]) |> hd() |> String.to_atom()
+
+      from [j, oj] in base_query,
+        order_by: [{^direction, coalesce(oj.scheduled_at, ^DateTime.from_unix!(253_402_300_799))}]
+    else
+      base_query
+    end
+
+    case Flop.validate_and_run(query, Map.drop(flop_params, ["order_by", "order_directions"])) do
       {:ok, {results, meta}} ->
         {:ok, %{jobs: results, meta: meta}}
 
@@ -92,7 +101,6 @@ defmodule PeregrineQueue.JobDataService do
         {:error, changeset}
     end
   end
-
   def get_status_counts_for_time_range(%{start_time: start_time, end_time: end_time}, queue_names \\ []) do
     jobs_status_counts = if Enum.count(queue_names) > 0 do
       Repo.all(

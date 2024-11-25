@@ -60,15 +60,24 @@ impl MyQueueService {
 
 async fn send_heartbeat(
     client: &mut QueueServiceClient<Channel>,
-    worker_id: String,
+    config: Config,
 ) -> Result<(), Box<dyn std::error::Error>> {
     loop {
         let request = tonic::Request::new(WorkerHeartbeatRequest {
-            worker_id: worker_id.clone(),
+            worker_id: config.worker_id.clone(),
         });
 
         let response = client.worker_heart_beat(request).await?;
         println!("Heartbeat Response: {:?}", response.get_ref());
+        if(response.get_ref().status == "unregistered") {
+            let request = tonic::Request::new(RegisterWorkerRequest {
+                queue_name: config.queue_name.clone(),
+                worker_id: config.worker_id.clone(),
+                worker_address: config.worker_address.clone(),
+            });
+
+            let response = client.register_worker(request).await?;
+        }
 
         // Wait for 30 seconds before the next heartbeat
         sleep(Duration::from_secs(360)).await;
@@ -350,7 +359,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Queue Name: {}", config.queue_name);
     
     let request = tonic::Request::new(RegisterWorkerRequest {
-        queue_name: config.queue_name,
+        queue_name: config.queue_name.clone(),
         worker_id: config.worker_id.clone(),
         worker_address: config.worker_address.clone(),
     });
@@ -366,7 +375,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Start heartbeat
-    send_heartbeat(&mut client, config.worker_id).await?;
+    send_heartbeat(&mut client, config).await?;
     
     Ok(())
 }

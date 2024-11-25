@@ -98,9 +98,15 @@ defmodule PeregrineQueue.QueueServer do
   def worker_heart_beat(%Queue.WorkerHeartbeatRequest{
     worker_id: worker_id
   }, _) do
+    IO.puts("HEARTBEAT")
     WorkerRegistry.register_heartbeat(worker_id)
 
-    %Queue.WorkerHeartbeatResponse{status: "success", message: "Heartbeat registered"}
+    is_worker_registered = WorkerRegistry.is_worker_registered(worker_id)
+    if(is_worker_registered) do
+      %Queue.WorkerHeartbeatResponse{status: "success", message: "Heartbeat registered"}
+    else
+      %Queue.WorkerHeartbeatResponse{status: "unregistered", message: "Heartbeat registered"}
+    end
   end
 
   def get_queues() do
