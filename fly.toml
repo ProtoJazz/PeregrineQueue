@@ -4,9 +4,6 @@ kill_signal = 'SIGTERM'
 
 [build]
 
-[deploy]
-release_command = '/app/bin/peregrine_queue eval "PeregrineQueue.Release.migrate"'
-
 [env]
 PHX_HOST = 'peregrinequeue.fly.dev'
 PORT = '8080'
