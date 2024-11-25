@@ -1,6 +1,8 @@
-<section class="bg-white dark:bg-gray-900">
-  <div class="max-w-l w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6">
-    <.job_stats jobs_stats={@jobs_stats}/>
+defmodule PeregrineQueueWeb.Components.JobsChart do
+  use PeregrineQueueWeb, :html
+
+  def jobs_chart(assigns) do
+    ~H"""
     <div phx-hook="DashboardChart" id="bar-chart"></div>
     <div class="grid grid-cols-1 items-center border-gray-200 border-t dark:border-gray-700 justify-between">
       <div class="flex justify-between items-center pt-5">
@@ -12,7 +14,7 @@
           class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 text-center inline-flex items-center dark:hover:text-white"
           type="button"
         >
-          Last 7 days
+          <%= PeregrineQueueWeb.Utils.days_to_display_text(@days_back) %>
           <svg
             class="w-2.5 m-2.5 ms-1.5"
             aria-hidden="true"
@@ -41,14 +43,8 @@
             <li>
               <a
                 href="#"
-                class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-              >
-                Yesterday
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
+                phx-click="range_adjust"
+                phx-value-days_back="1"
                 class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               >
                 Today
@@ -57,6 +53,8 @@
             <li>
               <a
                 href="#"
+                phx-click="range_adjust"
+                phx-value-days_back="7"
                 class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               >
                 Last 7 days
@@ -65,6 +63,8 @@
             <li>
               <a
                 href="#"
+                phx-click="range_adjust"
+                phx-value-days_back="30"
                 class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               >
                 Last 30 days
@@ -73,6 +73,8 @@
             <li>
               <a
                 href="#"
+                phx-click="range_adjust"
+                phx-value-days_back="90"
                 class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               >
                 Last 90 days
@@ -81,6 +83,8 @@
             <li>
               <a
                 href="#"
+                phx-click="range_adjust"
+                phx-value-days_back="180"
                 class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               >
                 Last 6 months
@@ -89,6 +93,8 @@
             <li>
               <a
                 href="#"
+                phx-click="range_adjust"
+                phx-value-days_back="365"
                 class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
               >
                 Last year
@@ -98,8 +104,6 @@
         </div>
       </div>
     </div>
-  </div>
-</section>
-<hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700">
-<.paginated_table jobs={@jobs} meta={@meta} />
-<.live_component module={PeregrineQueueWeb.Components.GlobalEvents} id="global-event-handler" />
+    """
+  end
+end

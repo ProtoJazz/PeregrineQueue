@@ -2,6 +2,8 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
   alias PeregrineQueue.JobDataService
   use PeregrineQueueWeb, :live_view
   import PeregrineQueueWeb.Components.JobsTable
+  import PeregrineQueueWeb.Components.JobStats
+
 
   @impl true
   def mount(_params, _session, socket) do
@@ -10,8 +12,7 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
 
   @impl true
   def handle_params(%{"name" => name}, _, socket) do
-    # jobs = JobDataService.get_jobs_for_queue(name)
-
+    days_back = 7
     flop_params = %{
       "page" => 1,
       "page_size" => 10,
@@ -20,31 +21,30 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
       "filters" => [%{field: :queue_name, op: :=~, value: name}]
     }
 
-    socket = refresh_data(socket, flop_params, name)
+    socket = refresh_data(socket, flop_params, name, days_back)
 
     {:noreply, socket}
   end
 
-  def refresh_data(socket, flop_params, name) do
+  def refresh_data(socket, flop_params, name, days_back) do
     time_range = %{
-      start_time: DateTime.utc_now() |> DateTime.add(-7, :day),
+      start_time: DateTime.utc_now() |> DateTime.add(-1 * days_back, :day),
       end_time: DateTime.utc_now()
     }
 
     {:ok, %{jobs: jobs, meta: meta}} =
-      JobDataService.get_paginated_jobs_for_time_range(time_range, flop_params)
+      JobDataService.get_paginated_jobs(flop_params)
 
     if meta.total_count == 0 do
       jobs_stats = %{pending: 0, active: 0, failed: 0, complete: 0}
 
       {:noreply,
-       socket |> assign(queue_name: name, jobs: jobs, meta: meta, jobs_stats: jobs_stats)}
+       socket |> assign(queue_name: name, jobs: jobs, meta: meta, jobs_stats: jobs_stats, days_back: days_back, time_range: time_range)}
     else
       jobs_stats = JobDataService.get_status_counts_for_time_range(time_range, [name])
       chart_data = JobDataService.transform_jobs_for_chart(jobs_stats)
       categories = jobs_stats |> Map.keys()
 
-      socket =
         socket
         |> assign(
           jobs: jobs,
@@ -52,7 +52,8 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
           jobs_stats: jobs_stats |> Map.get(name),
           chart_data: chart_data,
           meta: meta,
-          time_range: time_range
+          time_range: time_range,
+          days_back: days_back
         )
         |> push_event("chart-data", %{
           series_data: chart_data,
@@ -63,17 +64,9 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
     end
   end
 
-  def get_data_for_jobs(jobs, time_range, name) do
-    jobs_stats = JobDataService.get_status_counts_for_time_range(time_range, [name])
-    chart_data = JobDataService.transform_jobs_for_chart(jobs_stats)
-    categories = jobs_stats |> Map.keys()
-
-    {categories, jobs_stats, chart_data}
-  end
-
   def handle_info(
         %{type: :refresh_jobs},
-        %{assigns: %{time_range: time_range, meta: meta, queue_name: name}} = socket
+        %{assigns: %{time_range: time_range, meta: meta, queue_name: name, days_back: days_back}} = socket
       ) do
     filters =
       Enum.map(meta.flop.filters, fn
@@ -88,7 +81,7 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
       "order_directions" => meta.flop.order_directions,
       "filters" => filters
     }
-    socket = refresh_data(socket, flop_params, name)
+    socket = refresh_data(socket, flop_params, name, days_back)
     {:noreply, socket}
   end
 
@@ -99,6 +92,14 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
 
     {:noreply, assign(socket, jobs: jobs, meta: meta)}
   end
+
+  def handle_event("range_adjust", %{"days_back" => days_back}, %{assigns: %{meta: meta, name: name}} = socket) do
+    days_back = String.to_integer(days_back)
+    flop_params = %{"page" => meta.current_page, "page_size" => meta.page_size, "order_by" => meta.flop.order_by, "order_directions" => meta.flop.order_directions}
+    socket = refresh_data(socket, flop_params, name, days_back)
+    {:noreply, socket}
+  end
+
 
   defp page_title(:show), do: "Show Queue"
   defp page_title(:edit), do: "Edit Queue"

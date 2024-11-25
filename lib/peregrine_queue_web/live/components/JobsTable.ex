@@ -124,8 +124,8 @@ defmodule PeregrineQueueWeb.Components.JobsTable do
           aria-label="Table navigation"
         >
           <span class="text-sm font-normal text-gray-500 dark:text-gray-400 mb-4 md:mb-0 block w-full md:inline md:w-auto">
-            Showing <span class="font-semibold text-gray-900 dark:text-white">1-10</span>
-            of <span class="font-semibold text-gray-900 dark:text-white">1000</span>
+            Showing <span class="font-semibold text-gray-900 dark:text-white"><%= ((@meta.current_page - 1) * @meta.page_size) + 1 %>-<%=  min((@meta.current_page * @meta.page_size), @meta.total_count) %></span>
+            of <span class="font-semibold text-gray-900 dark:text-white"><%= @meta.total_count %></span>
           </span>
           <!-- Pagination -->
           <ul class="inline-flex -space-x-px rtl:space-x-reverse text-sm h-8">

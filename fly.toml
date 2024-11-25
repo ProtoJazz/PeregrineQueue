@@ -26,6 +26,14 @@ worker = """\
   --queue-name=media_update \
   --demo-mode\
   """
+  image-worker = """\
+  /usr/local/bin/fast_response_rust_worker \
+  --worker-id=image_rust_worker \
+  --worker-address=image-worker.process.peregrinequeue.internal:50053 \
+  --queue-address=app.process.peregrinequeue.internal:50051 \
+  --queue-name=data_sync \
+  --demo-mode\
+  """
 
 # Phoenix web service
 [http_service]
@@ -56,7 +64,7 @@ port = 50051
 [[services]]
 internal_port = 50053
 protocol = "tcp"
-processes = ["worker"]
+processes = ["worker", "image-worker"]
 internal_name = "worker-grpc"
 
 [[services.ports]]
