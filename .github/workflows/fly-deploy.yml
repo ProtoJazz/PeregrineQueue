@@ -28,11 +28,9 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-      # Optional: Add this step if you want to try running migrations separately
-      - name: Run Migrations Separately
-        if: failure()
+      - name: Run Migrations
         run: |
-          echo "Attempting to run migrations directly..."
+          echo "Attempting to run migrations..."
           flyctl ssh console -C '/app/bin/peregrine_queue eval "PeregrineQueue.Release.migrate"'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
