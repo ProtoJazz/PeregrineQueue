@@ -76,7 +76,11 @@ defmodule PeregrineQueueWeb.Components.JobsTable do
                   scope="row"
                   class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
+
+                <%= live_patch to: ~p"/jobs/#{job.id}",
+                    class: "flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700" do %>
                   <%= job.id %>
+                <% end %>
                 </th>
                 <td class="px-2 py-2">
                   <%= attempt %>

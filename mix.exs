@@ -62,7 +62,8 @@ defmodule PeregrineQueue.MixProject do
       {:protobuf, "~> 0.12.0"},
       {:protobuf_generate, "~> 0.1.3"},
       {:flop_phoenix, "~> 0.20.0"},
-      {:mint, "~> 1.0"}
+      {:mint, "~> 1.0"},
+      {:timex, "~> 3.7"}
     ]
   end
 

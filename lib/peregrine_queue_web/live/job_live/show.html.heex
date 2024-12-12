@@ -1,0 +1,88 @@
+ <section class="bg-white dark:bg-gray-900">
+  <div class="py-8 px-4 mx-auto max-w-screen-xl sm:py-16 lg:px-6">
+      <div class="flex items-center gap-8 mb-8 lg:mb-16">
+          <div>
+              <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">Job: <%= @job.id %></h2>
+              <p class="text-gray-500 sm:text-xl dark:text-gray-400">Queue: <%= @job.queue_name %></p>
+          </div>
+          <div>
+              <h2 class="mb-4 text-4xl font-bold dark:text-white">Status</h2>
+              <p class="text-gray-500 sm:text-xl dark:text-gray-400"><%= @job.status %></p>
+          </div>
+      </div>
+      <div class="space-y-8 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-12 md:space-y-0">
+         
+          <div>
+             
+              <h3 class="mb-2 text-xl font-bold dark:text-white">Payload</h3>
+              <p class="text-gray-500 dark:text-gray-400"><%= @job.payload %></p>
+          </div>
+          <div>
+              
+              <h3 class="mb-2 text-xl font-bold dark:text-white">Worker</h3>
+              <p class="text-gray-500 dark:text-gray-400"><%= @job.worker_id %>@<%= @job.worker_address %></p>
+          </div>
+          <%= if @job.oban_job do %>
+           <div>
+              
+              <h3 class="mb-2 text-xl font-bold dark:text-white">Attempts</h3>
+              <p class="text-gray-500 dark:text-gray-400"><%= @job.oban_job.attempt %>/<%= @job.oban_job.max_attempts %></p>
+          </div>
+          <div>
+              
+              <h3 class="mb-2 text-xl font-bold dark:text-white">Scheduled At</h3>
+              <p class="text-gray-500 dark:text-gray-400"><%= DateTimeFormatter.format_datetime(@job.oban_job.scheduled_at) %></p>
+          </div>
+          <div>
+              <h3 class="mb-2 text-xl font-bold dark:text-white">Attempted At</h3>
+              <p class="text-gray-500 dark:text-gray-400"><%= DateTimeFormatter.format_datetime(@job.oban_job.attempted_at) %></p>
+          </div>
+          <div>
+              <h3 class="mb-2 text-xl font-bold dark:text-white">Completed At</h3>
+              <p class="text-gray-500 dark:text-gray-400"><%= DateTimeFormatter.format_datetime(@job.oban_job.completed_at) %></p>
+          </div>
+          <% end %>
+      </div>
+  </div>
+</section>
+ <%= if @job.oban_job do %>
+ <section class="bg-white dark:bg-gray-900">
+      <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" class="px-2 py-3">
+                Attempt
+              </th>
+               <th scope="col" class="px-2 py-3">
+                Timestamp
+              </th>
+              <th scope="col" class="px-2 py-3">
+                Error Message
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+          <%= if @job.oban_job do %>
+            <%= for error <- @job.oban_job.errors do %>
+              <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                <td class="px-6 py-4">
+                  <%= error["attempt"]%>
+                </td>
+                <td class="px-6 py-4">
+                  <%=  DateTimeFormatter.format_datetime(error["at"]) %>
+                </td>
+                <td class="px-6 py-4">
+                  <%= error["error"] %>
+                </td>
+              </tr>
+            <% end %>
+            <% end %>
+          </tbody>
+        </table>
+        </div>         
+    </section>  
+    <% end %>
+
+
+<.live_component module={PeregrineQueueWeb.Components.GlobalEvents} id="global-event-handler" />
