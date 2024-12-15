@@ -23,10 +23,9 @@ defmodule PeregrineQueueWeb.Router do
 
   scope "/", PeregrineQueueWeb do
     pipe_through :browser
-    live "/dashboard", DashboardLive.Index, :index
+    live "/", DashboardLive.Index, :index
     live "/queues/:name", QueueLive.Show, :show
     live "/jobs/:job_id", JobLive.Show, :show
-    get "/", PageController, :home
   end
 
   # Other scopes may use custom stacks.
