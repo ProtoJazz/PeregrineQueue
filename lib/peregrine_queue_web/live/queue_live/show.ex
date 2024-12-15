@@ -3,6 +3,7 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
   use PeregrineQueueWeb, :live_view
   import PeregrineQueueWeb.Components.JobsTable
   import PeregrineQueueWeb.Components.JobStats
+  import PeregrineQueueWeb.Components.JobsChart
 
 
   @impl true
@@ -21,7 +22,7 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
       "filters" => [%{field: :queue_name, op: :=~, value: name}]
     }
 
-    socket = refresh_data(socket, flop_params, name, days_back)
+    socket = refresh_data(socket, flop_params, name, days_back) |> assign(selected_jobs: [])
 
     {:noreply, socket}
   end
@@ -44,12 +45,14 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
       jobs_stats = JobDataService.get_status_counts_for_time_range(time_range, [name])
       chart_data = JobDataService.transform_jobs_for_chart(jobs_stats)
       categories = jobs_stats |> Map.keys()
+      chart_job_stats = jobs_stats |> Map.get(name)
 
+      chart_job_stats = if chart_job_stats == nil do %{pending: 0, active: 0, failed: 0, complete: 0} else chart_job_stats end
         socket
         |> assign(
           jobs: jobs,
           queue_name: name,
-          jobs_stats: jobs_stats |> Map.get(name),
+          jobs_stats: chart_job_stats,
           chart_data: chart_data,
           meta: meta,
           time_range: time_range,
@@ -96,10 +99,13 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
   end
 
   @impl true
-  def handle_event("range_adjust", %{"days_back" => days_back}, %{assigns: %{meta: meta, name: name}} = socket) do
+  def handle_event("range_adjust", %{"days_back" => days_back}, %{assigns: %{meta: meta, queue_name: queue_name}} = socket) do
+    IO.inspect("QUEUE NAME")
+    IO.inspect(queue_name)
     days_back = String.to_integer(days_back)
     flop_params = %{"page" => meta.current_page, "page_size" => meta.page_size, "order_by" => meta.flop.order_by, "order_directions" => meta.flop.order_directions}
-    socket = refresh_data(socket, flop_params, name, days_back)
+    socket = refresh_data(socket, flop_params, queue_name, days_back)
     {:noreply, socket}
   end
+
 end

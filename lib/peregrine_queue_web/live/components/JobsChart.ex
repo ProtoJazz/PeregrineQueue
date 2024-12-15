@@ -3,7 +3,11 @@ defmodule PeregrineQueueWeb.Components.JobsChart do
 
   def jobs_chart(assigns) do
     ~H"""
-    <div phx-hook="DashboardChart" id="bar-chart"></div>
+    <% sum_states = Enum.reduce(@jobs_stats, 0, fn {_state, count}, acc -> acc + count end) %>
+
+    <%= if sum_states > 0 do %>
+    <div phx-hook="DashboardChart" id="bar-chart" phx-update="ignore"></div>
+    <% end %>
     <div class="grid grid-cols-1 items-center border-gray-200 border-t dark:border-gray-700 justify-between">
       <div class="flex justify-between items-center pt-5">
         <!-- Button -->

@@ -1,11 +1,11 @@
 <section class="bg-white dark:bg-gray-900">
   <div class="max-w-l w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6">
     <.job_stats jobs_stats={@jobs_stats}/>
-    <.jobs_chart days_back={@days_back} />
+    <.jobs_chart days_back={@days_back} jobs_stats={@jobs_stats} />
   </div>
 </section>
 <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
-<.paginated_table jobs={@jobs} meta={@meta} />
+<.paginated_table jobs={@jobs} meta={@meta} selected_jobs={@selected_jobs} />
 
 <%!-- <section class="bg-white dark:bg-gray-900">
 <input
