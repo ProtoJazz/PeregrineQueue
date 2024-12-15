@@ -12,7 +12,6 @@ use tokio::time::Duration;
 use tonic::{transport::Channel, transport::Server, Request, Response, Status};
 use std::net::ToSocketAddrs;
 use tonic::transport::Uri;
-use tracing::info;
 use tonic_reflection::server::Builder;
 use rand::Rng;
 pub mod queue {
@@ -69,14 +68,14 @@ async fn send_heartbeat(
 
         let response = client.worker_heart_beat(request).await?;
         println!("Heartbeat Response: {:?}", response.get_ref());
-        if(response.get_ref().status == "unregistered") {
+        if response.get_ref().status == "unregistered" {
             let request = tonic::Request::new(RegisterWorkerRequest {
                 queue_name: config.queue_name.clone(),
                 worker_id: config.worker_id.clone(),
                 worker_address: config.worker_address.clone(),
             });
 
-            let response = client.register_worker(request).await?;
+            client.register_worker(request).await?;
         }
 
         // Wait for 30 seconds before the next heartbeat

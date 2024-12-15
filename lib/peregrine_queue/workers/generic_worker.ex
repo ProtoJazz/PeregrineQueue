@@ -1,13 +1,11 @@
 defmodule PeregrineQueue.Workers.GenericWorker do
   alias PeregrineQueue.JobDataService
-  alias PeregrineQueue.JobData
   use Oban.Worker
   alias PeregrineQueue.WorkerClient
-  alias PeregrineQueue.Repo
   alias PeregrineQueue.JobRateLimiter
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"queue_name" => queue_name, "data" => data, "job_data_id" => job_id}} = job) do
+  def perform(%Oban.Job{args: %{"queue_name" => queue_name, "data" => data, "job_data_id" => job_id}}) do
     IO.puts("Performing job for queue #{queue_name}")
     try do
       case JobRateLimiter.can_execute?(queue_name) do
@@ -45,7 +43,7 @@ defmodule PeregrineQueue.Workers.GenericWorker do
 
         job_data = JobDataService.get_job_data_by_job_data_id(job_id)
 
-        dispatched_worker = Enum.reduce_while(workers, nil, fn worker, acc ->
+        dispatched_worker = Enum.reduce_while(workers, nil, fn worker, _acc ->
           IO.puts("Attempting worker: #{inspect(worker)}")
 
           case WorkerClient.start_link(worker.worker_address) do
@@ -80,7 +78,7 @@ defmodule PeregrineQueue.Workers.GenericWorker do
     end
   end
 
-  defp update_job_data_error(job_id, error_message) do
+  defp update_job_data_error(job_id, _error_message) do
     job_data = JobDataService.get_job_data_by_job_data_id(job_id)
     JobDataService.update_job_data(job_data, %{status: :failed})
   end

@@ -1,6 +1,5 @@
 defmodule PeregrineQueue.EnqueueService do
   alias PeregrineQueue.Workers.GenericWorker
-  alias Queue.{GetWorkersForQueueRequest, QueueService}
 
   def enqueue_job(queue_name, data) do
     config = Application.get_env(:peregrine_queue, PeregrineQueue, [])

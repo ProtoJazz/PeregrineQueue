@@ -1,7 +1,6 @@
 defmodule PeregrineQueueWeb.Components.GlobalEvents do
   use PeregrineQueueWeb, :live_component
   alias PeregrineQueue.EnqueueService
-  alias PeregrineQueue.JobData
   alias PeregrineQueue.JobDataService
 
   def mount(socket) do

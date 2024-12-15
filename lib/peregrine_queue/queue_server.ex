@@ -23,16 +23,9 @@ defmodule PeregrineQueue.QueueServer do
   end
 
   def work_report(%Queue.WorkReportRequest{
-    queue_name: queue,
-    data: data,
-    worker_id: worker_id,
     job_id: job_id,
     status: status
   }, _) do
-    #get job data
-    #update job data
-
-    IO.puts("WORK REPORT")
     job_data = JobDataService.get_job_data_by_job_data_id(job_id)
     |> IO.inspect
 

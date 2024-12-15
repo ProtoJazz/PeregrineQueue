@@ -64,9 +64,10 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
     end
   end
 
+  @impl true
   def handle_info(
         %{type: :refresh_jobs},
-        %{assigns: %{time_range: time_range, meta: meta, queue_name: name, days_back: days_back}} = socket
+        %{assigns: %{meta: meta, queue_name: name, days_back: days_back}} = socket
       ) do
     filters =
       Enum.map(meta.flop.filters, fn
@@ -85,6 +86,7 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("page", %{"page" => page}, %{assigns: %{time_range: time_range, meta: meta}} = socket) do
     flop_params = %{"page" => page, "page_size" => meta.page_size, "order_by" => ["scheduled_at"], "order_directions" => ["desc"]}
 
@@ -93,14 +95,11 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
     {:noreply, assign(socket, jobs: jobs, meta: meta)}
   end
 
+  @impl true
   def handle_event("range_adjust", %{"days_back" => days_back}, %{assigns: %{meta: meta, name: name}} = socket) do
     days_back = String.to_integer(days_back)
     flop_params = %{"page" => meta.current_page, "page_size" => meta.page_size, "order_by" => meta.flop.order_by, "order_directions" => meta.flop.order_directions}
     socket = refresh_data(socket, flop_params, name, days_back)
     {:noreply, socket}
   end
-
-
-  defp page_title(:show), do: "Show Queue"
-  defp page_title(:edit), do: "Edit Queue"
 end

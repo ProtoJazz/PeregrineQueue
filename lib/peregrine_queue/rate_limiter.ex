@@ -8,6 +8,10 @@ defmodule PeregrineQueue.JobRateLimiter do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
   end
 
+  def init(init_arg) do
+    {:ok, init_arg}
+  end
+
   def can_execute?(queue_name) do
     all_queues =
       Application.get_env(:peregrine_queue, PeregrineQueue, %{push_queues: [], pull_queues: []})

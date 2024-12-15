@@ -50,7 +50,7 @@ defmodule PeregrineQueueWeb.DashboardLive.Index do
     {:noreply, assign(socket, jobs: jobs, meta: meta)}
   end
 
-  def handle_info(%{type: :refresh_jobs}, %{assigns: %{time_range: time_range, meta: meta, days_back: days_back}} = socket) do
+  def handle_info(%{type: :refresh_jobs}, %{assigns: %{meta: meta, days_back: days_back}} = socket) do
     flop_params = %{"page" => meta.current_page, "page_size" => meta.page_size, "order_by" => meta.flop.order_by, "order_directions" => meta.flop.order_directions}
     socket = refresh_data(socket, flop_params, days_back)
     {:noreply, socket}
