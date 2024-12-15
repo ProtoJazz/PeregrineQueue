@@ -33,7 +33,7 @@ worker = """\
   """
 
 [deploy]
-  release_command = "/app/bin/peregrine_queue eval 'PeregrineQueue.Release.migrate'"
+  release_command = "/app/bin/migrate"
 
 # Phoenix web service
 [http_service]
