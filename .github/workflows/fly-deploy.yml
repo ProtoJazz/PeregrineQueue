@@ -39,6 +39,6 @@ jobs:
       - name: Run Migrations
         run: |
           echo "Attempting to run migrations..."
-          flyctl ssh console -C '/app/bin/peregrine_queue eval "PeregrineQueue.Release.migrate"'
+          flyctl ssh console -C 
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

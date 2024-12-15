@@ -32,6 +32,9 @@ worker = """\
   --demo-mode\
   """
 
+[deploy]
+  release_command = "/app/bin/peregrine_queue eval 'PeregrineQueue.Release.migrate'"
+
 # Phoenix web service
 [http_service]
 internal_port = 8080
@@ -72,3 +75,4 @@ memory = '1gb'
 cpu_kind = 'shared'
 cpus = 1
 count = 1
+
