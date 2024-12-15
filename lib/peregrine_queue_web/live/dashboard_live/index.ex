@@ -19,7 +19,7 @@ defmodule PeregrineQueueWeb.DashboardLive.Index do
     {series_data, categories, jobs_stats, jobs_stats_data} = get_data_for_jobs(time_range)
     socket
     |> assign(jobs: jobs, series_data: series_data, categories: categories, jobs_stats: jobs_stats, meta: meta, time_range: time_range, days_back: days_back)
-    |> push_event("chart-data", %{series_data: series_data, categories: categories, chart_height: 50 * Map.size(jobs_stats_data), chart_links: Enum.map(categories, fn category -> "/queues/#{category}" end)})
+    |> push_event("chart-data", %{series_data: series_data, categories: categories, chart_height: 50 * Kernel.map_size(jobs_stats_data), chart_links: Enum.map(categories, fn category -> "/queues/#{category}" end)})
   end
 
   def get_data_for_jobs(time_range) do
@@ -35,6 +35,7 @@ defmodule PeregrineQueueWeb.DashboardLive.Index do
     {series_data, categories, jobs_stats, jobs_stats_data}
   end
 
+  @impl true
   def handle_event("range_adjust", %{"days_back" => days_back}, %{assigns: %{meta: meta}} = socket) do
     days_back = String.to_integer(days_back)
     flop_params = %{"page" => meta.current_page, "page_size" => meta.page_size, "order_by" => meta.flop.order_by, "order_directions" => meta.flop.order_directions}
@@ -42,6 +43,7 @@ defmodule PeregrineQueueWeb.DashboardLive.Index do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("page", %{"page" => page}, %{assigns: %{meta: meta}} = socket) do
     flop_params = %{"page" => page, "page_size" => meta.page_size, "order_by" => ["scheduled_at"], "order_directions" => ["desc"]}
 
@@ -50,6 +52,7 @@ defmodule PeregrineQueueWeb.DashboardLive.Index do
     {:noreply, assign(socket, jobs: jobs, meta: meta)}
   end
 
+  @impl true
   def handle_info(%{type: :refresh_jobs}, %{assigns: %{meta: meta, days_back: days_back}} = socket) do
     flop_params = %{"page" => meta.current_page, "page_size" => meta.page_size, "order_by" => meta.flop.order_by, "order_directions" => meta.flop.order_directions}
     socket = refresh_data(socket, flop_params, days_back)

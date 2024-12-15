@@ -2,8 +2,6 @@ defmodule PeregrineQueue.JobDataService do
   import Ecto.Query
   alias PeregrineQueue.JobData
   alias PeregrineQueue.Repo
-  alias Oban.Job
-  # use Scrivener, page_size: 10
 
   def get_job_data_by_oban_id(oban_job_id) do
     Repo.one(from(j in JobData, where: j.oban_job_id == ^oban_job_id))
