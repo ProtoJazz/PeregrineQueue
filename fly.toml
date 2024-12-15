@@ -31,10 +31,6 @@ worker = """\
   --queue-name=data_sync \
   --demo-mode\
   """
-
-[deploy]
-  release_command = "/app/bin/migrate"
-
 # Phoenix web service
 [http_service]
 internal_port = 8080
