@@ -45,6 +45,16 @@ defmodule PeregrineQueueWeb.SharedSelects do
         {:noreply, assign(socket, selected_jobs: [], global_notifications: [notification | socket.assigns.global_notifications])}
       end
 
+
+      def handle_event("retry_job", %{"id" => job_id}, %{assigns: %{jobs: jobs}} = socket) do
+        job_id = String.to_integer(job_id)
+        job = Enum.find(jobs, & &1.id == job_id)
+        JobDataService.retry_job_data(job)
+        notification = %{id: :erlang.unique_integer([:positive]), message: "Retrying jobs"}
+        Phoenix.PubSub.broadcast(PeregrineQueue.PubSub, "job_events", %{type: :refresh_jobs})
+        {:noreply, assign(socket, global_notifications: [notification | socket.assigns.global_notifications])}
+      end
+
       def handle_event("remove_notification", %{"id" => id}, socket) do
         notifications =
           Enum.reject(socket.assigns.global_notifications, fn n -> n.id == String.to_integer(id) end)
@@ -70,6 +80,13 @@ defmodule PeregrineQueueWeb.SharedSelects do
         notification = %{id: :erlang.unique_integer([:positive]), message: "Deleting jobs"}
         Phoenix.PubSub.broadcast(PeregrineQueue.PubSub, "job_events", %{type: :refresh_jobs})
         {:noreply, assign(socket, selected_jobs: [], global_notifications: [notification | socket.assigns.global_notifications])}
+      end
+
+      def handle_event("create_job", %{"queue_name" => queue, "message" => message}, socket) do
+        EnqueueService.enqueue_job(queue, message)
+        notification = %{id: :erlang.unique_integer([:positive]), message: "Job created"}
+        Phoenix.PubSub.broadcast(PeregrineQueue.PubSub, "job_events", %{type: :refresh_jobs})
+        {:noreply, assign(socket, global_notifications: [notification | socket.assigns.global_notifications])}
       end
 
     end

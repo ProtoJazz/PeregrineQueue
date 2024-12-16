@@ -9,6 +9,9 @@ defmodule PeregrineQueueWeb.DashboardLive.Index do
   alias PeregrineQueue.JobDataService
   @impl true
   def mount(_params, _session, socket) do
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(PeregrineQueue.PubSub, "job_events")
+    end
     days_back = 7
     flop_params = %{"page" => 1, "page_size" => 10, "order_by" => ["scheduled_at"], "order_directions" => ["desc"]}
     socket = refresh_data(socket, flop_params, days_back)

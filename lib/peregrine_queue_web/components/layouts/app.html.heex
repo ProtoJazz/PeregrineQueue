@@ -837,6 +837,31 @@
           </ul>
         </li>
       </ul>
+
+      <ul class="space-y-2">
+        <li>
+          <a
+            href="#"
+            data-modal-target="defaultModal"
+            data-modal-toggle="defaultModal"
+            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+          >
+            <svg
+              class="w-6 h-6 text-gray-800 dark:text-white"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M8.4 6.763c-.251.1-.383.196-.422.235L6.564 5.584l2.737-2.737c1.113-1.113 3.053-1.097 4.337.187l1.159 1.159a1 1 0 0 1 1.39.022l4.105 4.105a1 1 0 0 1 .023 1.39l1.345 1.346a1 1 0 0 1 0 1.415l-2.052 2.052a1 1 0 0 1-1.414 0l-1.346-1.346a1 1 0 0 1-1.323.039L11.29 8.983a1 1 0 0 1 .04-1.324l-.849-.848c-.18-.18-.606-.322-1.258-.25a3.271 3.271 0 0 0-.824.202Zm1.519 3.675L3.828 16.53a1 1 0 0 0 0 1.414l2.736 2.737a1 1 0 0 0 1.414 0l6.091-6.091-4.15-4.15Z" />
+            </svg>
+
+            <span class="ml-3">Create Job</span>
+          </a>
+        </li>
+      </ul>
       <%= if System.get_env("DISPLAY_DEMO") == "true" do %>
         <ul class="space-y-2">
           <li>
@@ -921,4 +946,98 @@
       <%= @inner_content %>
     </div>
   </main>
+  <!-- Main modal -->
+  <div
+    id="defaultModal"
+    tabindex="-1"
+    aria-hidden="true"
+    class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-modal md:h-full"
+  >
+    <div class="relative p-4 w-full max-w-2xl h-full md:h-auto">
+      <!-- Modal content -->
+      <div class="relative p-4 bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5">
+        <!-- Modal header -->
+        <div class="flex justify-between items-center pb-4 mb-4 rounded-t border-b sm:mb-5 dark:border-gray-600">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            Create Job
+          </h3>
+          <button
+            type="button"
+            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+            data-modal-toggle="defaultModal"
+          >
+            <svg
+              aria-hidden="true"
+              class="w-5 h-5"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clip-rule="evenodd"
+              >
+              </path>
+            </svg>
+            <span class="sr-only">Close modal</span>
+          </button>
+        </div>
+        <!-- Modal body -->
+        <form phx-submit="create_job" class="space-y-4">
+          <div class="grid gap-4 mb-4 sm:grid-cols-1">
+            <div>
+              <label
+                for="queue"
+                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Queue
+              </label>
+               <select name="queue_name" id="queue_name_input" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                  <%= for queue <- PeregrineQueue.QueueServer.get_queues do %>
+                    <option value={queue.name}><%= queue.name %></option>
+                  <% end %>
+                </select>
+            </div>
+            <br/>
+            <div>
+              <label
+                for="brand"
+                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Message
+              </label>
+               <textarea
+                id="message"
+                rows="4"
+                name="message"
+                class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                placeholder="Job message"
+              />
+            </div>
+            
+          </div>
+          <button
+            type="submit"
+            class="text-white inline-flex items-center bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+          >
+            <svg
+              class="mr-1 -ml-1 w-6 h-6"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                clip-rule="evenodd"
+              >
+              </path>
+            </svg>
+            Enqueue Job
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>

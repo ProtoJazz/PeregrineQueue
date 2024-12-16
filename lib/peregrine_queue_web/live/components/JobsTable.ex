@@ -139,7 +139,6 @@ defmodule PeregrineQueueWeb.Components.JobsTable do
                     class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
                     phx-click="retry_job"
                     phx-value-id={job.id}
-                    phx-target="#global-event-handler"
                   >
                     Retry
                   </a>

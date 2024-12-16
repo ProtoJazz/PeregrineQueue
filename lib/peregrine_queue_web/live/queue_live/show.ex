@@ -9,6 +9,9 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
 
   @impl true
   def mount(_params, _session, socket) do
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(PeregrineQueue.PubSub, "job_events")
+    end
     {:ok, socket}
   end
 
