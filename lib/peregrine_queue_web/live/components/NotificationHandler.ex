@@ -1,52 +1,9 @@
-defmodule PeregrineQueueWeb.Components.GlobalEvents do
-  use PeregrineQueueWeb, :live_component
-  alias PeregrineQueue.EnqueueService
-  alias PeregrineQueue.JobDataService
+defmodule PeregrineQueueWeb.Components.NotificationHandler do
+  use PeregrineQueueWeb, :html
 
-  def mount(socket) do
-    if connected?(socket) do
-      Phoenix.PubSub.subscribe(PeregrineQueue.PubSub, "job_events")
-    end
-
-    {:ok, assign(socket, global_notifications: [])}
-  end
-
-  def handle_event("spawn_demo_event", _, socket) do
-    notification = %{id: :erlang.unique_integer([:positive]), message: "Demo event triggered!"}
-    IO.inspect(notification)
-
-
-    EnqueueService.enqueue_job("media_update", "/var/bean/movies")
-    EnqueueService.enqueue_job("data_sync", "/var/bean/movies")
-   # EnqueueService.enqueue_job("web_scrapping", "/var/bean/movies")
-    Phoenix.PubSub.broadcast(PeregrineQueue.PubSub, "job_events", %{type: :refresh_jobs})
-
-    {:noreply, assign(socket, global_notifications: [notification | socket.assigns.global_notifications])}
-  end
-  def handle_event("remove_notification", %{"id" => id}, socket) do
-    notifications =
-      Enum.reject(socket.assigns.global_notifications, fn n -> n.id == String.to_integer(id) end)
-
-    {:noreply, assign(socket, global_notifications: notifications)}
-  end
-
-  def handle_event("retry_job", %{"id" => id}, socket) do
-    IO.inspect("Retrying job with id #{id}")
-
-    job_id = String.to_integer(id)
-    job_data = JobDataService.get_job_data_with_oban_job(job_id)
-
-    JobDataService.retry_job_data(job_data)
-    notification = %{id: :erlang.unique_integer([:positive]), message: "Retrying job: #{id}"}
-    Phoenix.PubSub.broadcast(PeregrineQueue.PubSub, "job_events", %{type: :refresh_jobs})
-    {:noreply, assign(socket, global_notifications: [notification | socket.assigns.global_notifications])}
-
-  end
-
-
-  def render(assigns) do
+  def notification_center(assigns) do
     ~H"""
-    <span id="global-event-handler">
+    <span id="notification-center">
       <div class="fixed bottom-4 right-4 space-y-2">
       <%= for notification <- @global_notifications do %>
         <div
@@ -54,7 +11,6 @@ defmodule PeregrineQueueWeb.Components.GlobalEvents do
           phx-hook="Toast"
           phx-click="remove_notification"
           data-id={notification.id}
-          phx-target="#global-event-handler"
           phx-value-id={notification.id}
           class="flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800"
           role="alert"
@@ -73,7 +29,6 @@ defmodule PeregrineQueueWeb.Components.GlobalEvents do
             class="ml-auto -mx-1.5 -my-1.5 bg-white text-yellow-400 hover:text-yellow-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
             phx-click="remove_notification"
             data-id={notification.id}
-            phx-target="#global-event-handler"
             phx-value-id={notification.id}
             aria-label="Close"
           >

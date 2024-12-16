@@ -1,10 +1,11 @@
 defmodule PeregrineQueueWeb.QueueLive.Show do
   alias PeregrineQueue.JobDataService
   use PeregrineQueueWeb, :live_view
+  use PeregrineQueueWeb.SharedSelects
   import PeregrineQueueWeb.Components.JobsTable
   import PeregrineQueueWeb.Components.JobStats
   import PeregrineQueueWeb.Components.JobsChart
-
+  import PeregrineQueueWeb.Components.NotificationHandler
 
   @impl true
   def mount(_params, _session, socket) do
@@ -22,7 +23,7 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
       "filters" => [%{field: :queue_name, op: :=~, value: name}]
     }
 
-    socket = refresh_data(socket, flop_params, name, days_back) |> assign(selected_jobs: [])
+    socket = refresh_data(socket, flop_params, name, days_back) |> assign(selected_jobs: [], global_notifications: [])
 
     {:noreply, socket}
   end
@@ -39,8 +40,7 @@ defmodule PeregrineQueueWeb.QueueLive.Show do
     if meta.total_count == 0 do
       jobs_stats = %{pending: 0, active: 0, failed: 0, complete: 0}
 
-      {:noreply,
-       socket |> assign(queue_name: name, jobs: jobs, meta: meta, jobs_stats: jobs_stats, days_back: days_back, time_range: time_range)}
+       socket |> assign(queue_name: name, jobs: jobs, meta: meta, jobs_stats: jobs_stats, days_back: days_back, time_range: time_range)
     else
       jobs_stats = JobDataService.get_status_counts_for_time_range(time_range, [name])
       chart_data = JobDataService.transform_jobs_for_chart(jobs_stats)

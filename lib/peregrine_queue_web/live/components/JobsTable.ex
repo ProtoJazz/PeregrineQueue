@@ -6,11 +6,29 @@ defmodule PeregrineQueueWeb.Components.JobsTable do
     <section class="bg-white dark:bg-gray-900">
       <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+          <section class="flex items-center justify-between p-4 bg-white dark:bg-gray-800">
+            <div class="inline-flex rounded-md shadow-sm" role="group">
+              <button
+                type="button"
+                phx-click="retry_jobs"
+                class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-s-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white"
+              >
+                Retry
+              </button>
+
+              <button
+                type="button"
+                class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-e-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white"
+              >
+                Delete
+              </button>
+            </div>
+          </section>
           <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
               <th scope="col" class="p-4">
                 <div class="flex items-center">
-                <input
+                  <input
                     id="checkbox-all-search"
                     type="checkbox"
                     phx-click="select_all_jobs"
@@ -81,11 +99,10 @@ defmodule PeregrineQueueWeb.Components.JobsTable do
                   scope="row"
                   class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-
-                <%= live_patch to: ~p"/jobs/#{job.id}",
+                  <%= live_patch to: ~p"/jobs/#{job.id}",
                     class: "flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700" do %>
-                  <%= job.id %>
-                <% end %>
+                    <%= job.id %>
+                  <% end %>
                 </th>
                 <td class="px-2 py-2">
                   <%= attempt %>
@@ -116,7 +133,9 @@ defmodule PeregrineQueueWeb.Components.JobsTable do
                 </td>
 
                 <td class="px-6 py-4">
-                  <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                  <a
+                    href="#"
+                    class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
                     phx-click="retry_job"
                     phx-value-id={job.id}
                     phx-target="#global-event-handler"
@@ -133,8 +152,15 @@ defmodule PeregrineQueueWeb.Components.JobsTable do
           aria-label="Table navigation"
         >
           <span class="text-sm font-normal text-gray-500 dark:text-gray-400 mb-4 md:mb-0 block w-full md:inline md:w-auto">
-            Showing <span class="font-semibold text-gray-900 dark:text-white"><%= ((@meta.current_page - 1) * @meta.page_size) + 1 %>-<%=  min((@meta.current_page * @meta.page_size), @meta.total_count) %></span>
-            of <span class="font-semibold text-gray-900 dark:text-white"><%= @meta.total_count %></span>
+            Showing
+            <span class="font-semibold text-gray-900 dark:text-white">
+              <%= (@meta.current_page - 1) * @meta.page_size + 1 %>-<%= min(
+                @meta.current_page * @meta.page_size,
+                @meta.total_count
+              ) %>
+            </span>
+            of
+            <span class="font-semibold text-gray-900 dark:text-white"><%= @meta.total_count %></span>
           </span>
           <!-- Pagination -->
           <ul class="inline-flex -space-x-px rtl:space-x-reverse text-sm h-8">

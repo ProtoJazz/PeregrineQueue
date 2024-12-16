@@ -3,6 +3,7 @@ defmodule PeregrineQueueWeb.DashboardLive.Index do
   import PeregrineQueueWeb.Components.JobsTable
   import PeregrineQueueWeb.Components.JobStats
   import PeregrineQueueWeb.Components.JobsChart
+  import PeregrineQueueWeb.Components.NotificationHandler
   use PeregrineQueueWeb.SharedSelects
 
   alias PeregrineQueue.JobDataService
@@ -11,7 +12,7 @@ defmodule PeregrineQueueWeb.DashboardLive.Index do
     days_back = 7
     flop_params = %{"page" => 1, "page_size" => 10, "order_by" => ["scheduled_at"], "order_directions" => ["desc"]}
     socket = refresh_data(socket, flop_params, days_back)
-    socket = socket |> assign(selected_jobs: [])
+    socket = socket |> assign(selected_jobs: [], global_notifications: [])
     {:ok, socket}
   end
 

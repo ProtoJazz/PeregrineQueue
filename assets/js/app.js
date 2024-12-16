@@ -43,7 +43,7 @@ Hooks = {}
 Hooks.Toast = {
     mounted() {
       setTimeout(() => {
-        this.pushEventTo("#global-event-handler", "remove_notification", { id: this.el.dataset.id })
+        this.pushEvent( "remove_notification", { id: this.el.dataset.id })
       }, 5000) 
     },
   }

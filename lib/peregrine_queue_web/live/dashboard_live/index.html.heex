@@ -6,6 +6,7 @@
 </section>
 <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
 <.paginated_table jobs={@jobs} meta={@meta} selected_jobs={@selected_jobs} />
+<.notification_center global_notifications={@global_notifications} />
 
 <%!-- <section class="bg-white dark:bg-gray-900">
 <input
@@ -48,4 +49,3 @@
     patch={~p"/dashboard"}
   />
 </.modal> --%>
-<.live_component module={PeregrineQueueWeb.Components.GlobalEvents} id="global-event-handler" />
