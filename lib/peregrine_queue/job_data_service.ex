@@ -15,6 +15,14 @@ defmodule PeregrineQueue.JobDataService do
     Repo.one(from(j in JobData, where: j.id == ^job_data_id, preload: :oban_job))
   end
 
+  def delete_job(job_data) do
+
+    Repo.delete!(job_data)
+    if(job_data.oban_job != nil) do
+      Repo.delete!(job_data.oban_job)
+    end
+  end
+
   def retry_oban_job(oban_job) do
           oban_job
           |> Ecto.Changeset.change(%{
