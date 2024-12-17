@@ -15,7 +15,7 @@ defmodule PeregrineQueueWeb.JobLive.Show do
   def handle_params(%{"job_id" => job_id}, _, socket) do
     job = JobDataService.get_job_data_with_oban_job(job_id)
     IO.inspect(job)
-    {:noreply, assign(socket, job: job, global_notifications: [])}
+    {:noreply, assign(socket, job: job, global_notifications: [], qurery: "")}
   end
 
 end

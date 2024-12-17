@@ -4,7 +4,7 @@ defmodule PeregrineQueue.JobData do
 
   @derive {
     Flop.Schema,
-    filterable: [:queue_name, :status, :worker_id, :worker_address, :inserted_at],
+    filterable: [:queue_name, :status, :worker_id, :worker_address, :inserted_at, :payload],
     sortable: [:queue_name, :status, :worker_id, :worker_address, :inserted_at, :scheduled_at]
   }
 

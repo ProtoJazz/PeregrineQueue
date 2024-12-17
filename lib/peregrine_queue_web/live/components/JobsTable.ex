@@ -4,6 +4,48 @@ defmodule PeregrineQueueWeb.Components.JobsTable do
   def paginated_table(assigns) do
     ~H"""
     <section class="bg-white dark:bg-gray-900">
+      <form class="flex justify-start mb-4" phx-submit="search_jobs">
+        <label
+          for="default-search"
+          class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
+        >
+          Search
+        </label>
+        <div class="relative w-full max-w-md">
+          <div class="absolute inset-y-0 start-0 flex items-center pl-3 pointer-events-none">
+            <svg
+              class="w-4 h-4 text-gray-500 dark:text-gray-400"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 20 20"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+              />
+            </svg>
+          </div>
+          <input
+            type="search"
+            id="job-search"
+            name="query"
+            value={@query}
+            class="block w-full p-4 pl-10 pr-20 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            placeholder="Search payload text"
+          />
+          <button
+            type="submit"
+            class="absolute right-2.5 bottom-2.5 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            Search
+          </button>
+        </div>
+      </form>
+
       <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           <section class="flex items-center justify-between p-4 bg-white dark:bg-gray-800">
@@ -39,7 +81,7 @@ defmodule PeregrineQueueWeb.Components.JobsTable do
                   <label for="checkbox-all-search" class="sr-only">checkbox</label>
                 </div>
               </th>
-              <th scope="col" class="px-2 py-3">
+              <th scope="col" class="px-5 py-3">
                 ID
               </th>
               <th scope="col" class="px-2 py-3">
@@ -51,7 +93,7 @@ defmodule PeregrineQueueWeb.Components.JobsTable do
               <th scope="col" class="px-2 py-3">
                 Status
               </th>
-              <th scope="col" class="px-6 py-3">
+              <th scope="col" class="px-8 py-3">
                 Payload
               </th>
               <th scope="col" class="px-6 py-3">
@@ -68,9 +110,6 @@ defmodule PeregrineQueueWeb.Components.JobsTable do
               </th>
               <th scope="col" class="px-6 py-3">
                 Updated At
-              </th>
-              <th scope="col" class="px-6 py-3">
-                Actions
               </th>
             </tr>
           </thead>
@@ -96,15 +135,15 @@ defmodule PeregrineQueueWeb.Components.JobsTable do
                     <label for="checkbox-table-search-1" class="sr-only">checkbox</label>
                   </div>
                 </td>
-                <th
+                <td
                   scope="row"
                   class="px-2 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
                   <%= live_patch to: ~p"/jobs/#{job.id}",
-                    class: "flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700" do %>
+                    class: "px-2 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700" do %>
                     <%= job.id %>
                   <% end %>
-                </th>
+                </td>
                 <td class="px-2 py-2">
                   <%= attempt %>
                 </td>
@@ -131,17 +170,6 @@ defmodule PeregrineQueueWeb.Components.JobsTable do
                 </td>
                 <td class="px-6 py-4">
                   <%= job.updated_at %>
-                </td>
-
-                <td class="px-6 py-4">
-                  <a
-                    href="#"
-                    class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    phx-click="retry_job"
-                    phx-value-id={job.id}
-                  >
-                    Retry
-                  </a>
                 </td>
               </tr>
             <% end %>

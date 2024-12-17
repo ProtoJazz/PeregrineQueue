@@ -15,7 +15,7 @@ defmodule PeregrineQueueWeb.DashboardLive.Index do
     days_back = 7
     flop_params = %{"page" => 1, "page_size" => 10, "order_by" => ["scheduled_at"], "order_directions" => ["desc"]}
     socket = refresh_data(socket, flop_params, days_back)
-    socket = socket |> assign(selected_jobs: [], global_notifications: [])
+    socket = socket |> assign(selected_jobs: [], global_notifications: [], query: "")
     {:ok, socket}
   end
 
@@ -58,12 +58,34 @@ defmodule PeregrineQueueWeb.DashboardLive.Index do
     {:noreply, assign(socket, jobs: jobs, meta: meta)}
   end
 
+  def handle_event("search_jobs", %{"query" => query}, %{assigns: %{meta: meta}} = socket) do
+
+    flop_params = %{"page" => meta.current_page, "page_size" => meta.page_size, "order_by" => meta.flop.order_by, "order_directions" => meta.flop.order_directions, "query" => query}
+    existing_filters = meta.flop.filters |> Enum.filter(fn filter -> filter.field != :payload end)
+
+    filters =
+      Enum.map(existing_filters, fn
+        %Flop.Filter{} = filter -> Map.from_struct(filter)
+        other -> other
+      end)
+
+    flop_params = if query == "" do
+      flop_params
+    else
+      Map.put(flop_params, "filters", filters ++ [%{field: :payload, op: :ilike_and, value: query}])
+    end
+
+    {:ok, %{jobs: jobs, meta: meta}} = JobDataService.get_paginated_jobs(flop_params)
+    {:noreply, assign(socket, jobs: jobs, meta: meta, query: query)}
+  end
+
   @impl true
   def handle_info(%{type: :refresh_jobs}, %{assigns: %{meta: meta, days_back: days_back}} = socket) do
     flop_params = %{"page" => meta.current_page, "page_size" => meta.page_size, "order_by" => meta.flop.order_by, "order_directions" => meta.flop.order_directions}
     socket = refresh_data(socket, flop_params, days_back)
     {:noreply, socket}
   end
+
 
 
 
