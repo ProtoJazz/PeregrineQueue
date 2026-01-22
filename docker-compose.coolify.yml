@@ -30,8 +30,8 @@ services:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/peregrine_queue_prod
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       DISPLAY_DEMO: "true"
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     depends_on:
       postgres:
         condition: service_healthy
