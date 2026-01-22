@@ -1,0 +1,84 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: peregrine_queue_prod
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      MIX_ENV: prod
+      PHX_SERVER: "true"
+      PHX_HOST: ${PHX_HOST:-peregrine-queue.protojazz.ca}
+      PORT: "8080"
+      GRPC_SERVER_HOST: "0.0.0.0"
+      GRPC_SERVER_PORT: "50051"
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/peregrine_queue_prod
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      DISPLAY_DEMO: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      sh -c "
+        echo 'Waiting for postgres...' &&
+        while ! nc -z postgres 5432; do sleep 1; done &&
+        echo 'Running migrations...' &&
+        /app/bin/peregrine_queue eval 'PeregrineQueue.Release.migrate' &&
+        echo 'Starting application...' &&
+        /app/bin/peregrine_queue start
+      "
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      RUST_LOG: debug
+    command:
+      - /usr/local/bin/fast_response_rust_worker
+      - --worker-id=fast_running_rust_worker
+      - --worker-address=0.0.0.0:50053
+      - --queue-address=app:50051
+      - --queue-name=media_update
+      - --demo-mode
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  image-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      RUST_LOG: debug
+    command:
+      - /usr/local/bin/fast_response_rust_worker
+      - --worker-id=image_rust_worker
+      - --worker-address=0.0.0.0:50053
+      - --queue-address=app:50051
+      - --queue-name=data_sync
+      - --demo-mode
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

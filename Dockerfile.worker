@@ -1,0 +1,25 @@
+FROM rust:1.81 AS builder
+
+WORKDIR /usr/src/app
+
+RUN apt-get update && apt-get install -y \
+    protobuf-compiler \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy proto files and worker source
+COPY priv/protos ./priv/protos
+COPY example_workers/fast_response_rust_worker ./example_workers/fast_response_rust_worker
+
+WORKDIR /usr/src/app/example_workers/fast_response_rust_worker
+RUN cargo build --release
+
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y \
+    libssl3 \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /usr/src/app/example_workers/fast_response_rust_worker/target/release/fast_response_rust_worker /usr/local/bin/
+
+CMD ["fast_response_rust_worker"]
